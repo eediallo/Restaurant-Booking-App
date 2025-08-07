@@ -23,22 +23,49 @@ if TYPE_CHECKING:
     pass
 
 
+class User(Base):
+    """
+    User model for authentication and profile management.
+    """
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    first_name = Column(String(50))
+    last_name = Column(String(50))
+    phone = Column(String(20))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+    # Relationships
+    bookings = relationship("Booking", back_populates="user")
+    preferences = relationship("UserPreference", back_populates="user")
+    customer = relationship("Customer", uselist=False, back_populates="user")
+
+
+class UserPreference(Base):
+    """
+    User preferences model.
+    """
+    __tablename__ = "user_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    preference_key = Column(String(50), nullable=False)
+    preference_value = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="preferences")
+
+
 class Restaurant(Base):
     """
     Restaurant model representing individual restaurant entities.
-
-    Each restaurant has a unique name and microsite identifier, along with
-    associated bookings and availability slots.
-
-    Attributes:
-        id (int): Primary key identifier
-        name (str): Unique restaurant name
-        microsite_name (str): Unique microsite identifier for the restaurant
-        created_at (datetime): Timestamp when restaurant was created
-        bookings: Related booking records
-        availability_slots: Related availability slot records
     """
-
     __tablename__ = "restaurants"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -54,25 +81,11 @@ class Restaurant(Base):
 class Customer(Base):
     """
     Customer model storing customer information and marketing preferences.
-
-    Stores all customer details including contact information and consent
-    for various marketing communications.
-
-    Attributes:
-        id (int): Primary key identifier
-        title (str): Customer title (Mr/Mrs/Ms/Dr)
-        first_name (str): Customer's first name
-        surname (str): Customer's surname
-        email (str): Customer's email address (indexed)
-        mobile (str): Customer's mobile phone number
-        phone (str): Customer's landline phone number
-        created_at (datetime): Timestamp when customer was created
-        bookings: Related booking records
     """
-
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     title = Column(String)
     first_name = Column(String)
     surname = Column(String)
@@ -93,34 +106,20 @@ class Customer(Base):
 
     # Relationships
     bookings = relationship("Booking", back_populates="customer")
+    user = relationship("User", back_populates="customer")
 
 
 class Booking(Base):
     """
     Booking model representing restaurant reservations.
-
-    Central model that links customers to restaurants with specific
-    date/time slots and booking details.
-
-    Attributes:
-        id (int): Primary key identifier
-        booking_reference (str): Unique booking reference code
-        restaurant_id (int): Foreign key to restaurant
-        customer_id (int): Foreign key to customer
-        visit_date (date): Date of the booking
-        visit_time (time): Time of the booking
-        party_size (int): Number of people in the booking
-        status (str): Booking status (confirmed/cancelled/completed)
-        created_at (datetime): Timestamp when booking was created
-        updated_at (datetime): Timestamp when booking was last updated
     """
-
     __tablename__ = "bookings"
 
     id = Column(Integer, primary_key=True, index=True)
     booking_reference = Column(String, unique=True, index=True, nullable=False)
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     visit_date = Column(Date, nullable=False)
     visit_time = Column(Time, nullable=False)
     party_size = Column(Integer, nullable=False)
@@ -136,25 +135,13 @@ class Booking(Base):
     # Relationships
     restaurant = relationship("Restaurant", back_populates="bookings")
     customer = relationship("Customer", back_populates="bookings")
+    user = relationship("User", back_populates="bookings")
 
 
 class AvailabilitySlot(Base):
     """
     Availability slot model defining when restaurants accept bookings.
-
-    Represents specific date/time combinations when a restaurant
-    can accept bookings, with capacity constraints.
-
-    Attributes:
-        id (int): Primary key identifier
-        restaurant_id (int): Foreign key to restaurant
-        date (date): Date of availability
-        time (time): Time slot
-        max_party_size (int): Maximum party size for this slot
-        available (bool): Whether the slot is available for booking
-        created_at (datetime): Timestamp when slot was created
     """
-
     __tablename__ = "availability_slots"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -172,16 +159,7 @@ class AvailabilitySlot(Base):
 class CancellationReason(Base):
     """
     Cancellation reason model for tracking why bookings are cancelled.
-
-    Provides predefined reasons for booking cancellations to maintain
-    consistent data and enable reporting.
-
-    Attributes:
-        id (int): Primary key identifier
-        reason (str): Short reason description
-        description (str): Detailed reason description
     """
-
     __tablename__ = "cancellation_reasons"
 
     id = Column(Integer, primary_key=True, index=True)

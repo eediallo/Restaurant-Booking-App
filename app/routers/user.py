@@ -32,6 +32,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail="User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Check if the account is still active
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Account has been deactivated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     return user
 
 

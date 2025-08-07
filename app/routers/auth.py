@@ -86,6 +86,14 @@ def login_for_access_token(login_data: UserLogin, db: Session = Depends(get_db))
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Check if the account is active
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account has been deactivated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     access_token = auth.create_access_token(data={"sub": user.email})
     refresh_token = auth.create_refresh_token(data={"sub": user.email})

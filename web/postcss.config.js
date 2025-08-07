@@ -1,8 +1,6 @@
-import { defineConfig } from 'postcss-load-config';
-
-export default defineConfig({
+export default {
   plugins: {
-    tailwindcss: {},
+    "@tailwindcss/postcss": {},
     autoprefixer: {},
   },
-});
+};

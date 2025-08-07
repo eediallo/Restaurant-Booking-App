@@ -10,7 +10,7 @@ Version: 1.0.0
 """
 
 from fastapi import FastAPI
-from app.routers import availability, booking
+from app.routers import availability, booking, auth, user
 from app.database import engine
 from app.models import Base
 import app.init_db as init_db
@@ -32,6 +32,8 @@ app = FastAPI(
 # Include API routers
 app.include_router(availability.router)
 app.include_router(booking.router)
+app.include_router(auth.router)
+app.include_router(user.router)
 
 
 @app.on_event("startup")

@@ -312,7 +312,9 @@ export const BookingFlow: React.FC = () => {
       {/* Step 5: Success */}
       {flowState.step === 5 && flowState.completedBooking && (
         <BookingSuccess
-          bookingReference={flowState.completedBooking.booking_reference || "N/A"}
+          bookingReference={
+            flowState.completedBooking.booking_reference || "N/A"
+          }
           visitDate={flowState.visitDate}
           visitTime={flowState.selectedTime}
           partySize={flowState.partySize}

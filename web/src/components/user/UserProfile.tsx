@@ -415,8 +415,8 @@ export const UserProfile: React.FC = () => {
               </div>
             </div>
             <div className="mt-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => setShowBookingHistory(true)}
               >

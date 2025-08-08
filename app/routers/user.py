@@ -65,11 +65,58 @@ def update_user_profile(updates: dict, current_user: models.User = Depends(get_c
 
 
 @router.get("/bookings")
-def get_user_bookings(current_user: models.User = Depends(get_current_user)):
+def get_user_bookings(
+    page: int = 1,
+    limit: int = 10,
+    status: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Get the current user's bookings.
+    Get the current user's bookings with pagination and filtering.
     """
-    return current_user.bookings
+    from sqlalchemy import and_
+    from datetime import datetime
+    
+    query = db.query(models.Booking).filter(models.Booking.user_id == current_user.id)
+    
+    # Apply filters
+    if status:
+        query = query.filter(models.Booking.status == status)
+    
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, "%Y-%m-%d").date()
+            query = query.filter(models.Booking.visit_date >= from_date)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, "%Y-%m-%d").date()
+            query = query.filter(models.Booking.visit_date <= to_date)
+        except ValueError:
+            pass
+    
+    # Get total count
+    total = query.count()
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    bookings = query.order_by(models.Booking.visit_date.desc(), models.Booking.visit_time.desc()).offset(offset).limit(limit).all()
+    
+    # Calculate total pages
+    pages = (total + limit - 1) // limit
+    
+    return {
+        "bookings": bookings,
+        "total": total,
+        "page": page,
+        "pages": pages,
+        "limit": limit
+    }
 
 
 @router.delete("/account")

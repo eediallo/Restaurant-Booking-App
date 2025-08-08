@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../hooks/useAuth";
+import { useUserBookingStats } from "../../hooks/useBookingApi";
 import { authService } from "../../services/auth";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { BookingHistory } from "./BookingHistory";
 import { getErrorMessage } from "../../utils";
 
 interface ProfileFormData {
@@ -22,10 +24,18 @@ interface ChangePasswordData {
 export const UserProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordFormOpen, setIsPasswordFormOpen] = useState(false);
+  const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const { user, logout } = useAuth();
+
+  // Fetch user booking statistics
+  const {
+    data: bookingStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useUserBookingStats();
 
   const {
     register: registerProfile,
@@ -109,6 +119,15 @@ export const UserProfile: React.FC = () => {
     return (
       <div className="text-center">
         <p className="text-gray-600">Please log in to view your profile.</p>
+      </div>
+    );
+  }
+
+  // Show booking history if requested
+  if (showBookingHistory) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <BookingHistory onClose={() => setShowBookingHistory(false)} />
       </div>
     );
   }
@@ -353,25 +372,59 @@ export const UserProfile: React.FC = () => {
         <h3 className="text-xl font-semibold text-gray-900 mb-4">
           Booking History Summary
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">5</div>
-            <div className="text-sm text-gray-600">Total Bookings</div>
+
+        {isLoadingStats ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">3</div>
-            <div className="text-sm text-gray-600">Completed</div>
+        ) : statsError ? (
+          <div className="text-center py-8">
+            <p className="text-red-600 mb-2">
+              Failed to load booking statistics
+            </p>
+            <p className="text-gray-500 text-sm">
+              Please try refreshing the page
+            </p>
           </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">2</div>
-            <div className="text-sm text-gray-600">Upcoming</div>
-          </div>
-        </div>
-        <div className="mt-4">
-          <Button variant="outline" className="w-full">
-            View Full Booking History
-          </Button>
-        </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {bookingStats?.total || 0}
+                </div>
+                <div className="text-sm text-gray-600">Total Bookings</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {bookingStats?.completed || 0}
+                </div>
+                <div className="text-sm text-gray-600">Completed</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {bookingStats?.upcoming || 0}
+                </div>
+                <div className="text-sm text-gray-600">Upcoming</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">
+                  {bookingStats?.cancelled || 0}
+                </div>
+                <div className="text-sm text-gray-600">Cancelled</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowBookingHistory(true)}
+              >
+                View Full Booking History
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

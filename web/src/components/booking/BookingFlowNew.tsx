@@ -312,12 +312,11 @@ export const BookingFlow: React.FC = () => {
       {/* Step 5: Success */}
       {flowState.step === 5 && flowState.completedBooking && (
         <BookingSuccess
-          booking={flowState.completedBooking}
-          onNewBooking={handleStartOver}
-          onViewBookings={() => {
-            // TODO: Implement view bookings functionality
-            console.log("View bookings clicked");
-          }}
+          bookingReference={flowState.completedBooking.booking_reference || "N/A"}
+          visitDate={flowState.visitDate}
+          visitTime={flowState.selectedTime}
+          partySize={flowState.partySize}
+          onStartOver={handleStartOver}
         />
       )}
     </div>

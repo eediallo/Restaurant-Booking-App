@@ -112,3 +112,48 @@ export const useUserBookingsList = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
+
+// Hook for getting user booking statistics
+export const useUserBookingStats = () => {
+  return useQuery<
+    {
+      total: number;
+      completed: number;
+      upcoming: number;
+      cancelled: number;
+    },
+    Error
+  >({
+    queryKey: ["userBookingStats"],
+    queryFn: async () => {
+      const response = await bookingService.getUserBookings(1, 100); // Get up to 100 bookings
+      const bookings = response.bookings;
+
+      const now = new Date();
+      const stats = {
+        total: bookings.length,
+        completed: 0,
+        upcoming: 0,
+        cancelled: 0,
+      };
+
+      bookings.forEach((booking) => {
+        if (booking.status === "cancelled") {
+          stats.cancelled++;
+        } else {
+          const bookingDate = new Date(
+            `${booking.visit_date}T${booking.visit_time}`
+          );
+          if (bookingDate < now) {
+            stats.completed++;
+          } else {
+            stats.upcoming++;
+          }
+        }
+      });
+
+      return stats;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};

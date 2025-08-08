@@ -2,6 +2,7 @@
 export { LoginForm } from "./forms/LoginForm";
 export { RegisterForm } from "./forms/RegisterForm";
 export { UserProfile } from "./user/UserProfile";
+export { BookingHistory } from "./user/BookingHistory";
 export { PrivateRoute } from "./auth/PrivateRoute";
 export { SessionWarning } from "./auth/SessionWarning";
 export { ErrorBoundary } from "./common/ErrorBoundary";

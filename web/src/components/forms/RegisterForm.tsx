@@ -7,9 +7,16 @@ import { Input } from "../ui/Input";
 import { getErrorMessage } from "../../utils";
 import type { RegisterRequest } from "../../types";
 
+interface RegisterFormData extends RegisterRequest {
+  confirmPassword: string;
+  acceptTerms: boolean;
+  marketingConsent?: boolean;
+}
+
 export const RegisterForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 
@@ -17,14 +24,33 @@ export const RegisterForm: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterRequest>();
+    watch,
+  } = useForm<RegisterFormData>();
 
-  const onSubmit = async (data: RegisterRequest) => {
+  const password = watch("password");
+
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
       setError("");
-      await registerUser(data);
-      navigate("/");
+      setSuccess("");
+
+      // Extract only the required fields for registration
+      const registerData: RegisterRequest = {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        phone: data.phone,
+      };
+
+      await registerUser(registerData);
+      setSuccess("Account created successfully! Redirecting...");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
@@ -52,6 +78,12 @@ export const RegisterForm: React.FC = () => {
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-sm text-green-600">{success}</p>
         </div>
       )}
 
@@ -131,13 +163,67 @@ export const RegisterForm: React.FC = () => {
           {...register("password", {
             required: "Password is required",
             minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters",
+              value: 8,
+              message: "Password must be at least 8 characters",
+            },
+            pattern: {
+              value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+              message:
+                "Password must contain at least one uppercase letter, one lowercase letter, and one number",
             },
           })}
           error={errors.password?.message}
           placeholder="Enter your password"
         />
+
+        <Input
+          label="Confirm Password"
+          type="password"
+          {...register("confirmPassword", {
+            required: "Please confirm your password",
+            validate: (value) => value === password || "Passwords do not match",
+          })}
+          error={errors.confirmPassword?.message}
+          placeholder="Confirm your password"
+        />
+
+        {/* Terms and Conditions */}
+        <div className="space-y-3">
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              {...register("acceptTerms", {
+                required: "You must accept the terms and conditions",
+              })}
+              className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              I agree to the{" "}
+              <Link to="/terms" className="text-blue-600 hover:text-blue-500">
+                Terms and Conditions
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
+                Privacy Policy
+              </Link>
+            </span>
+          </label>
+          {errors.acceptTerms && (
+            <p className="text-red-500 text-sm">{errors.acceptTerms.message}</p>
+          )}
+
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              {...register("marketingConsent")}
+              className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              I would like to receive marketing emails about special offers and
+              promotions (optional)
+            </span>
+          </label>
+        </div>
 
         <Button type="submit" loading={isLoading} className="w-full" size="lg">
           Create Account

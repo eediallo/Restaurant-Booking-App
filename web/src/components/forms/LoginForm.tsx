@@ -7,6 +7,10 @@ import { Input } from "../ui/Input";
 import { getErrorMessage } from "../../utils";
 import type { LoginRequest } from "../../types";
 
+interface LoginFormData extends LoginRequest {
+  rememberMe?: boolean;
+}
+
 export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -20,13 +24,21 @@ export const LoginForm: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginRequest>();
+  } = useForm<LoginFormData>();
 
-  const onSubmit = async (data: LoginRequest) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true);
       setError("");
-      await login(data);
+
+      // Handle remember me functionality
+      if (data.rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+      } else {
+        localStorage.removeItem("rememberMe");
+      }
+
+      await login({ username: data.username, password: data.password });
       navigate(from, { replace: true });
     } catch (err: unknown) {
       setError(getErrorMessage(err));
@@ -86,6 +98,25 @@ export const LoginForm: React.FC = () => {
           error={errors.password?.message}
           placeholder="Enter your password"
         />
+
+        {/* Remember Me and Forgot Password */}
+        <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              {...register("rememberMe")}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Remember me</span>
+          </label>
+
+          <Link
+            to="/forgot-password"
+            className="text-sm text-blue-600 hover:text-blue-500"
+          >
+            Forgot your password?
+          </Link>
+        </div>
 
         <Button type="submit" loading={isLoading} className="w-full" size="lg">
           Sign in

@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
+import { tokenUtils } from "../utils/token";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8547";
@@ -21,7 +22,7 @@ const api: AxiosInstance = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
+    const token = tokenUtils.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,7 +47,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem("refresh_token");
+        const refreshToken = tokenUtils.getRefreshToken();
         if (refreshToken) {
           const response = await axios.post(
             `${API_BASE_URL}/api/auth/refresh`,
@@ -56,7 +57,7 @@ api.interceptors.response.use(
           );
 
           const { access_token } = response.data;
-          localStorage.setItem("access_token", access_token);
+          tokenUtils.setAccessToken(access_token);
 
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -64,9 +65,7 @@ api.interceptors.response.use(
         }
       } catch {
         // Refresh failed, clear tokens and redirect to login
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
+        tokenUtils.clearTokens();
         window.location.href = "/login";
       }
     }

@@ -6,6 +6,8 @@ import { PrivateRoute } from "./components/auth/PrivateRoute";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { BookingForm } from "./components/forms/BookingForm";
+import { UserBookings } from "./components/booking/UserBookings";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -43,12 +45,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <Layout>
-                    <div className="text-center">
-                      <h1 className="text-2xl font-bold">Make a Booking</h1>
-                      <p className="text-gray-600 mt-2">
-                        Booking functionality coming soon...
-                      </p>
-                    </div>
+                    <BookingForm />
                   </Layout>
                 </PrivateRoute>
               }
@@ -59,12 +56,7 @@ function App() {
               element={
                 <PrivateRoute>
                   <Layout>
-                    <div className="text-center">
-                      <h1 className="text-2xl font-bold">My Bookings</h1>
-                      <p className="text-gray-600 mt-2">
-                        Your bookings will appear here...
-                      </p>
-                    </div>
+                    <UserBookings />
                   </Layout>
                 </PrivateRoute>
               }

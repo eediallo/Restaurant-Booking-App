@@ -75,6 +75,25 @@ export interface BookingRequest {
   RoomNumber?: string;
 }
 
+// Booking response types
+export interface BookingResponse extends Booking {
+  user_id: number;
+  restaurant_name: string;
+}
+
+export interface CancelBookingRequest {
+  micrositeName: string;
+  bookingReference: string;
+  cancellationReasonId: number;
+}
+
+export interface UserBookingsResponse {
+  bookings: Booking[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
 // API Error types
 export interface ApiError {
   detail: string;

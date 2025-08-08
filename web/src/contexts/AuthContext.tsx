@@ -5,6 +5,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { authService } from "../services/auth";
+import { tokenUtils } from "../utils/token";
 import type {
   User,
   LoginRequest,
@@ -29,17 +30,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Initialize auth state from localStorage
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem("access_token");
-      const storedUser = localStorage.getItem("user");
+      const token = tokenUtils.getAccessToken();
+      const storedUser = tokenUtils.getUserInfo();
 
       if (token && storedUser) {
         try {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
+          setUser(storedUser);
           // Verify token is still valid by fetching current user
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
-          localStorage.setItem("user", JSON.stringify(currentUser));
+          tokenUtils.setUserInfo(currentUser);
         } catch (error) {
           console.error("Auth initialization failed:", error);
           logout();
@@ -59,9 +59,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { access_token, refresh_token, user_info } = response;
 
       // Store tokens and user info
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("user", JSON.stringify(user_info));
+      tokenUtils.setTokens(access_token, refresh_token);
+      tokenUtils.setUserInfo(user_info);
 
       setUser(user_info);
     } catch (error) {
@@ -80,9 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { access_token, refresh_token, user_info } = response;
 
       // Store tokens and user info
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("user", JSON.stringify(user_info));
+      tokenUtils.setTokens(access_token, refresh_token);
+      tokenUtils.setUserInfo(user_info);
 
       setUser(user_info);
     } catch (error) {
@@ -95,9 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = (): void => {
     // Clear stored auth data
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+    tokenUtils.clearTokens();
 
     setUser(null);
 
@@ -107,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshToken = async (): Promise<void> => {
     try {
-      const storedRefreshToken = localStorage.getItem("refresh_token");
+      const storedRefreshToken = tokenUtils.getRefreshToken();
       if (!storedRefreshToken) {
         throw new Error("No refresh token available");
       }
@@ -116,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         refresh_token: storedRefreshToken,
       });
 
-      localStorage.setItem("access_token", response.access_token);
+      tokenUtils.setAccessToken(response.access_token);
     } catch (error) {
       console.error("Token refresh failed:", error);
       logout();

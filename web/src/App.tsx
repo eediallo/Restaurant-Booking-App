@@ -7,7 +7,7 @@ import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
-import { BookingForm } from "./components/forms/BookingForm";
+import { BookingFlow } from "./components/booking/BookingFlow";
 import { UserBookings } from "./components/booking/UserBookings";
 import { UserProfile } from "./components/user/UserProfile";
 
@@ -31,7 +31,6 @@ function App() {
               {/* Public routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-
               {/* Routes with layout */}
               <Route
                 path="/"
@@ -41,19 +40,17 @@ function App() {
                   </Layout>
                 }
               />
-
               {/* Protected routes */}
               <Route
                 path="/booking"
                 element={
                   <PrivateRoute>
                     <Layout>
-                      <BookingForm />
+                      <BookingFlow />
                     </Layout>
                   </PrivateRoute>
                 }
-              />
-
+              />{" "}
               <Route
                 path="/my-bookings"
                 element={
@@ -64,7 +61,6 @@ function App() {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/booking/:reference"
                 element={
@@ -80,7 +76,6 @@ function App() {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/booking-confirmation"
                 element={
@@ -98,7 +93,6 @@ function App() {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/profile"
                 element={
@@ -109,7 +103,6 @@ function App() {
                   </PrivateRoute>
                 }
               />
-
               {/* 404 fallback */}
               <Route
                 path="*"

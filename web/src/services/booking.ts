@@ -8,12 +8,18 @@ export const bookingService = {
     partySize: number,
     channelCode: string = "ONLINE"
   ): Promise<AvailabilityResponse> {
+    const formData = new FormData();
+    formData.append("VisitDate", visitDate);
+    formData.append("PartySize", partySize.toString());
+    formData.append("ChannelCode", channelCode);
+
     const response = await api.post<AvailabilityResponse>(
       "/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/AvailabilitySearch",
+      formData,
       {
-        VisitDate: visitDate,
-        PartySize: partySize,
-        ChannelCode: channelCode,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
     );
     return response.data;
@@ -21,9 +27,33 @@ export const bookingService = {
 
   // Create a new booking
   async createBooking(bookingData: BookingRequest): Promise<Booking> {
+    const formData = new FormData();
+    formData.append("VisitDate", bookingData.VisitDate);
+    formData.append("VisitTime", bookingData.VisitTime);
+    formData.append("PartySize", bookingData.PartySize.toString());
+    formData.append("ChannelCode", bookingData.ChannelCode);
+
+    if (bookingData.SpecialRequests) {
+      formData.append("SpecialRequests", bookingData.SpecialRequests);
+    }
+    if (bookingData.IsLeaveTimeConfirmed !== undefined) {
+      formData.append(
+        "IsLeaveTimeConfirmed",
+        bookingData.IsLeaveTimeConfirmed.toString()
+      );
+    }
+    if (bookingData.RoomNumber) {
+      formData.append("RoomNumber", bookingData.RoomNumber);
+    }
+
     const response = await api.post<Booking>(
       "/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/BookingWithStripeToken",
-      bookingData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   },
@@ -41,9 +71,29 @@ export const bookingService = {
     bookingReference: string,
     updates: Partial<BookingRequest>
   ): Promise<Booking> {
+    const formData = new FormData();
+
+    if (updates.VisitDate) {
+      formData.append("VisitDate", updates.VisitDate);
+    }
+    if (updates.VisitTime) {
+      formData.append("VisitTime", updates.VisitTime);
+    }
+    if (updates.PartySize !== undefined) {
+      formData.append("PartySize", updates.PartySize.toString());
+    }
+    if (updates.SpecialRequests) {
+      formData.append("SpecialRequests", updates.SpecialRequests);
+    }
+
     const response = await api.patch<Booking>(
       `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${bookingReference}`,
-      updates
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   },
@@ -51,14 +101,18 @@ export const bookingService = {
   // Cancel a booking
   async cancelBooking(
     bookingReference: string,
-    cancellationReasonId: number = 1
+    cancellationReasonId: number
   ): Promise<{ message: string }> {
+    const formData = new FormData();
+    formData.append("cancellationReasonId", cancellationReasonId.toString());
+
     const response = await api.post<{ message: string }>(
       `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${bookingReference}/Cancel`,
+      formData,
       {
-        micrositeName: "TheHungryUnicorn",
-        bookingReference,
-        cancellationReasonId,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
     );
     return response.data;

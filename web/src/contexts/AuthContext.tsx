@@ -91,14 +91,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = (): void => {
-    // Clear stored auth data
-    tokenUtils.clearTokens();
+  const logout = async (): Promise<void> => {
+    try {
+      console.log("AuthContext: Starting logout...");
 
-    setUser(null);
+      // Clear stored auth data immediately
+      tokenUtils.clearTokens();
+      setUser(null);
 
-    // Call logout endpoint (optional, for server-side cleanup)
-    authService.logout().catch(console.error);
+      console.log("AuthContext: Local auth data cleared");
+
+      // Call logout endpoint (optional, for server-side cleanup)
+      // Don't wait for this to complete as it's not critical
+      authService.logout().catch((error) => {
+        console.warn("Server logout failed (non-critical):", error);
+      });
+
+      console.log("AuthContext: Logout completed");
+    } catch (error) {
+      console.error("AuthContext: Logout error:", error);
+      // Always clear local state even if there's an error
+      tokenUtils.clearTokens();
+      setUser(null);
+    }
   };
 
   const refreshToken = async (): Promise<void> => {

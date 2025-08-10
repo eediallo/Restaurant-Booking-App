@@ -6,3 +6,4 @@ GEMINI.md
 *.env
 .env.local
 .env.production
+prompts

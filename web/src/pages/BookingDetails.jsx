@@ -7,6 +7,7 @@ const BookingDetails = () => {
   const { bookingReference } = useParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState(null);
+  const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -15,25 +16,25 @@ const BookingDetails = () => {
       try {
         setLoading(true);
         // First try to get booking from user's dashboard to get restaurant info
-        const dashboardResponse = await api.get(`/api/ConsumerApi/v1/Booking`);
+        const dashboardResponse = await api.get(`/api/user/bookings`);
         const userBooking = dashboardResponse.data.find(
           (b) => b.booking_reference === bookingReference
         );
 
         if (userBooking) {
           // Use the restaurant name from the user's booking data
-          const restaurantName =
-            userBooking.restaurant ||
-            userBooking.restaurant_name ||
-            "TheHungryUnicorn";
+          const restaurantNameFromBooking = userBooking.restaurant_name || "TheHungryUnicorn";
+          setRestaurantName(restaurantNameFromBooking);
           const response = await api.get(
-            `/api/ConsumerApi/v1/Restaurant/${restaurantName}/Booking/${bookingReference}`
+            `/api/ConsumerApi/v1/Restaurant/${restaurantNameFromBooking}/Booking/${bookingReference}`
           );
           setBooking(response.data);
         } else {
           // Fallback to default restaurant if booking not found in user's list
+          const defaultRestaurant = "TheHungryUnicorn";
+          setRestaurantName(defaultRestaurant);
           const response = await api.get(
-            `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${bookingReference}`
+            `/api/ConsumerApi/v1/Restaurant/${defaultRestaurant}/Booking/${bookingReference}`
           );
           setBooking(response.data);
         }
@@ -135,11 +136,7 @@ const BookingDetails = () => {
             <div className="info-grid">
               <div className="info-item">
                 <span className="label">Restaurant:</span>
-                <span className="value">
-                  {booking.restaurant ||
-                    booking.restaurant_name ||
-                    "Restaurant"}
-                </span>
+                <span className="value">{restaurantName}</span>
               </div>
               <div className="info-item">
                 <span className="label">Date:</span>

@@ -234,15 +234,15 @@ const Dashboard = () => {
       <div className="dashboard-actions">
         <button
           className="action-btn primary"
-          onClick={() => (window.location.href = "/book")}
+          onClick={() => (window.location.href = "/restaurants")}
         >
-          Make New Reservation
+          Discover Restaurants
         </button>
         <button
           className="action-btn secondary"
           onClick={() => (window.location.href = "/availability")}
         >
-          Check Availability
+          Find Available Tables
         </button>
       </div>
 

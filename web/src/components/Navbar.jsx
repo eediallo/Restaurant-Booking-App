@@ -71,13 +71,6 @@ const Navbar = () => {
               >
                 Find Tables
               </a>
-              <a
-                href="/restaurants"
-                className="nav-link"
-                onClick={closeMobileMenu}
-              >
-                Restaurants
-              </a>
 
               <div className="user-dropdown">
                 <button className="user-button" onClick={toggleDropdown}>

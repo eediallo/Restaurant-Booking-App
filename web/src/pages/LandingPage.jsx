@@ -1,22 +1,17 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import "./LandingPage.css";
 
-export function LandingPage() {
-  const { user, logout, isAuthenticated } = useAuth();
+export default function LandingPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
-
   const handleBookNow = () => {
-    if (isAuthenticated()) {
-      // Navigate to booking page (will be implemented later)
-      navigate("/bookings");
+    if (user) {
+      // Navigate to booking page
+      navigate("/availability");
     } else {
       // Navigate to login page
       navigate("/login");
@@ -25,43 +20,6 @@ export function LandingPage() {
 
   return (
     <div className="landing-page">
-      {/* Header */}
-      <header className="header">
-        <div className="logo">
-          <span className="logo-main">TheHungry</span>
-          <span className="logo-accent">Unicorn</span>
-        </div>
-        <div className="auth-buttons">
-          {isAuthenticated() ? (
-            <>
-              <span className="welcome-text">
-                Welcome, {user?.username || user?.first_name || "User"}!
-              </span>
-              <Link to="/bookings">
-                <Button variant="ghost" size="sm">
-                  My Bookings
-                </Button>
-              </Link>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button variant="primary" size="sm">
-                  Sign Up
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="main-content">
@@ -77,7 +35,7 @@ export function LandingPage() {
               className="book-button"
               onClick={handleBookNow}
             >
-              {isAuthenticated() ? "Book Now" : "Sign in to Book"}
+              {user ? "Book Now" : "Sign in to Book"}
             </Button>
           </div>
 

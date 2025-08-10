@@ -11,7 +11,7 @@ Version: 1.0.0
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import availability, booking, auth, user
+from app.routers import availability, booking, auth, user, restaurant
 from app.database import engine
 from app.models import Base
 import app.init_db as init_db
@@ -51,6 +51,7 @@ app.include_router(availability.router)
 app.include_router(booking.router)
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(restaurant.router)
 
 
 @app.on_event("startup")

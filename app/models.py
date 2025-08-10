@@ -46,6 +46,7 @@ class User(Base):
     bookings = relationship("Booking", back_populates="user")
     preferences = relationship("UserPreference", back_populates="user")
     customer = relationship("Customer", uselist=False, back_populates="user")
+    reviews = relationship("RestaurantReview", back_populates="user")
 
 
 class UserPreference(Base):
@@ -66,18 +67,52 @@ class UserPreference(Base):
 
 class Restaurant(Base):
     """
-    Restaurant model representing individual restaurant entities.
+    Restaurant model representing individual restaurant entities with extended features.
     """
     __tablename__ = "restaurants"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     microsite_name = Column(String, unique=True, index=True, nullable=False)
+    
+    # Phase 3B: Extended restaurant information
+    description = Column(Text)
+    cuisine_type = Column(String)  # Italian, French, Asian, etc.
+    location = Column(String)
+    address = Column(Text)
+    phone = Column(String)
+    email = Column(String)
+    website = Column(String)
+    
+    # Pricing and features
+    price_range = Column(String)  # $, $$, $$$, $$$$
+    features = Column(Text)  # JSON string: outdoor seating, parking, etc.
+    dietary_options = Column(Text)  # JSON string: vegetarian, vegan, gluten-free
+    
+    # Ratings and reviews
+    average_rating = Column(Integer, default=0)  # 1-5 stars
+    total_reviews = Column(Integer, default=0)
+    
+    # Operating information
+    opening_hours = Column(Text)  # JSON string with daily hours
+    max_party_size = Column(Integer, default=8)
+    accepts_reservations = Column(Boolean, default=True)
+    
+    @property
+    def slug(self):
+        """Generate a URL-friendly slug from restaurant name."""
+        import re
+        return re.sub(r'[^a-zA-Z0-9]+', '', self.name.replace(' ', ''))
+    
+    # Status and metadata
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     bookings = relationship("Booking", back_populates="restaurant")
     availability_slots = relationship("AvailabilitySlot", back_populates="restaurant")
+    reviews = relationship("RestaurantReview", back_populates="restaurant")
 
 
 class Customer(Base):
@@ -138,6 +173,7 @@ class Booking(Base):
     restaurant = relationship("Restaurant", back_populates="bookings")
     customer = relationship("Customer", back_populates="bookings")
     user = relationship("User", back_populates="bookings")
+    review = relationship("RestaurantReview", back_populates="booking", uselist=False)
 
 
 class AvailabilitySlot(Base):
@@ -167,3 +203,37 @@ class CancellationReason(Base):
     id = Column(Integer, primary_key=True, index=True)
     reason = Column(String, nullable=False)
     description = Column(Text)
+
+
+class RestaurantReview(Base):
+    """
+    Restaurant review model for customer feedback and ratings.
+    """
+    __tablename__ = "restaurant_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=True)
+    
+    # Review content
+    rating = Column(Integer, nullable=False)  # 1-5 stars
+    title = Column(String)
+    review_text = Column(Text)
+    
+    # Review categories
+    food_rating = Column(Integer)  # 1-5 stars
+    service_rating = Column(Integer)  # 1-5 stars
+    ambiance_rating = Column(Integer)  # 1-5 stars
+    value_rating = Column(Integer)  # 1-5 stars
+    
+    # Metadata
+    is_verified = Column(Boolean, default=False)  # Verified if from actual booking
+    is_published = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    restaurant = relationship("Restaurant", back_populates="reviews")
+    user = relationship("User", back_populates="reviews")
+    booking = relationship("Booking", back_populates="review")

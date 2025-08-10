@@ -29,6 +29,27 @@ def generate_booking_reference() -> str:
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
 
 
+def find_restaurant(restaurant_name: str, db: Session) -> Restaurant:
+    """
+    Find restaurant by name.
+    
+    Args:
+        restaurant_name: The name of the restaurant
+        db: Database session
+        
+    Returns:
+        Restaurant object if found
+        
+    Raises:
+        HTTPException: 404 if restaurant not found
+    """
+    restaurant = db.query(Restaurant).filter(Restaurant.name == restaurant_name).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_name}' not found")
+    
+    return restaurant
+
+
 @router.post("/{restaurant_name}/BookingWithStripeToken")
 async def create_booking_with_stripe(
     restaurant_name: str,
@@ -49,9 +70,8 @@ async def create_booking_with_stripe(
     db: Session = Depends(get_db),
 ):
     """Create a new booking, linked to the authenticated user."""
-    restaurant = db.query(Restaurant).filter(Restaurant.name == restaurant_name).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    # Find restaurant using helper function
+    restaurant = find_restaurant(restaurant_name, db)
 
     # Find or create a customer record linked to the user
     customer = db.query(Customer).filter(Customer.user_id == current_user.id).first()
@@ -104,11 +124,12 @@ async def get_booking(
     db: Session = Depends(get_db),
 ):
     """Get booking details by reference, ensuring user ownership."""
+    restaurant = find_restaurant(restaurant_name, db)
+    
     booking = (
         db.query(Booking)
-        .join(Restaurant)
         .filter(
-            Restaurant.name == restaurant_name,
+            Booking.restaurant_id == restaurant.id,
             Booking.booking_reference == booking_reference,
             Booking.user_id == current_user.id,  # Ownership check
         )
@@ -133,11 +154,12 @@ async def update_booking(
     db: Session = Depends(get_db),
 ):
     """Update an existing booking, ensuring user ownership."""
+    restaurant = find_restaurant(restaurant_name, db)
+    
     booking = (
         db.query(Booking)
-        .join(Restaurant)
         .filter(
-            Restaurant.name == restaurant_name,
+            Booking.restaurant_id == restaurant.id,
             Booking.booking_reference == booking_reference,
             Booking.user_id == current_user.id,
         )
@@ -180,11 +202,12 @@ async def cancel_booking(
     db: Session = Depends(get_db),
 ):
     """Cancel an existing booking, ensuring user ownership."""
+    restaurant = find_restaurant(restaurant_name, db)
+    
     booking = (
         db.query(Booking)
-        .join(Restaurant)
         .filter(
-            Restaurant.name == restaurant_name,
+            Booking.restaurant_id == restaurant.id,
             Booking.booking_reference == booking_reference,
             Booking.user_id == current_user.id,
         )

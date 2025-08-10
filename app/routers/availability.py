@@ -54,10 +54,10 @@ async def availability_search(
     Raises:
         HTTPException: 404 if restaurant not found
     """
-    # Find restaurant by name
+    # Find restaurant by name (assuming unique names)
     restaurant = db.query(Restaurant).filter(Restaurant.name == restaurant_name).first()
     if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+        raise HTTPException(status_code=404, detail=f"Restaurant '{restaurant_name}' not found")
 
     # Get availability slots for the requested date
     slots = db.query(AvailabilitySlot).filter(

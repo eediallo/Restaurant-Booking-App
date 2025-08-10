@@ -67,6 +67,13 @@ const Navbar = () => {
               <a href="/book" className="nav-link" onClick={closeMobileMenu}>
                 Make Booking
               </a>
+              <a
+                href="/templates"
+                className="nav-link"
+                onClick={closeMobileMenu}
+              >
+                Quick Book
+              </a>
 
               <div className="user-dropdown">
                 <button className="user-button" onClick={toggleDropdown}>

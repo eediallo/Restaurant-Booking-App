@@ -4,3 +4,66 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Booking Search Styles */
+.available-count.available {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.available-count.unavailable {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.time-slot {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.slot-time {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.slot-info {
+  margin-bottom: 1rem;
+}
+
+.book-slot-btn {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.book-slot-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.book-slot-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.no-availability {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}

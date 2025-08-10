@@ -23,27 +23,30 @@ const BookingForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState(null);
 
   useEffect(() => {
     // Check if there's pending booking data from availability search
     const pendingBooking = localStorage.getItem("pendingBooking");
     if (pendingBooking) {
       const data = JSON.parse(pendingBooking);
+
+      // Set both booking data and selected slot information
       setBookingData((prev) => ({
         ...prev,
-        ...data,
+        visitDate: data.visitDate || prev.visitDate,
+        visitTime: data.visitTime || prev.visitTime,
+        partySize: data.partySize || prev.partySize,
+        channelCode: data.channelCode || prev.channelCode,
       }));
+
+      if (data.selectedSlot) {
+        setSelectedSlot(data.selectedSlot);
+      }
+
       localStorage.removeItem("pendingBooking");
     }
-
-    // Pre-fill email if user is logged in
-    if (user?.email) {
-      setBookingData((prev) => ({
-        ...prev,
-        email: user.email,
-      }));
-    }
-  }, [user]);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -141,6 +144,37 @@ const BookingForm = () => {
 
       {!success && (
         <form onSubmit={handleSubmit} className="booking-form-container">
+          {selectedSlot && (
+            <div className="section selected-booking-summary">
+              <h2>Selected Reservation</h2>
+              <div className="booking-summary-grid">
+                <div className="summary-item">
+                  <span className="summary-label">Date:</span>
+                  <span className="summary-value">
+                    {selectedSlot.formattedDate}
+                  </span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Time:</span>
+                  <span className="summary-value">
+                    {selectedSlot.formattedTime}
+                  </span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Party Size:</span>
+                  <span className="summary-value">
+                    {bookingData.partySize}{" "}
+                    {bookingData.partySize === 1 ? "person" : "people"}
+                  </span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Restaurant:</span>
+                  <span className="summary-value">TheHungryUnicorn</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="section">
             <h2>Reservation Details</h2>
 

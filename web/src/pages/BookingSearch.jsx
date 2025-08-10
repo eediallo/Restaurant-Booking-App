@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import "./BookingSearch.css";
 
 const BookingSearch = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     visitDate: "",
     visitTime: "",
@@ -44,7 +46,8 @@ const BookingSearch = () => {
         }
       );
 
-      setAvailableSlots(response.data.AvailableSlots || []);
+      console.log("API Response:", response.data); // Debug log
+      setAvailableSlots(response.data.available_slots || []);
     } catch (err) {
       setError("Failed to search availability. Please try again.");
       console.error("Error searching availability:", err);
@@ -54,17 +57,30 @@ const BookingSearch = () => {
   };
 
   const handleBookSlot = (slot) => {
+    console.log("Selected slot:", slot); // Debug log
+
     // Navigate to booking form with pre-filled data
     const bookingData = {
       visitDate: searchParams.visitDate,
       visitTime: slot.time,
       partySize: searchParams.partySize,
       channelCode: searchParams.channelCode,
+      // Additional context for the booking form
+      selectedSlot: {
+        time: slot.time,
+        available: slot.available,
+        maxPartySize: slot.max_party_size,
+        currentBookings: slot.current_bookings,
+        formattedTime: formatTime(slot.time),
+        formattedDate: formatDate(searchParams.visitDate),
+      },
     };
+
+    console.log("Booking data to store:", bookingData); // Debug log
 
     // Store booking data in localStorage for the booking form
     localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
-    window.location.href = "/book";
+    navigate("/book");
   };
 
   const formatTime = (timeString) => {
@@ -152,18 +168,25 @@ const BookingSearch = () => {
                 <div key={index} className="time-slot">
                   <div className="slot-time">{formatTime(slot.time)}</div>
                   <div className="slot-info">
-                    <span className="available-count">
-                      {slot.available_tables} tables available
+                    <span
+                      className={`available-count ${
+                        slot.available ? "available" : "unavailable"
+                      }`}
+                    >
+                      {slot.available
+                        ? `${Math.max(
+                            0,
+                            slot.max_party_size - slot.current_bookings
+                          )} tables available`
+                        : "Fully booked"}
                     </span>
                   </div>
                   <button
                     className="book-slot-btn"
                     onClick={() => handleBookSlot(slot)}
-                    disabled={slot.available_tables === 0}
+                    disabled={!slot.available}
                   >
-                    {slot.available_tables > 0
-                      ? "Book This Time"
-                      : "Unavailable"}
+                    {slot.available ? "Book This Time" : "Unavailable"}
                   </button>
                 </div>
               ))}

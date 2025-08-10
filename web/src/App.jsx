@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import BookingSearch from "./pages/BookingSearch";
 import BookingForm from "./pages/BookingForm";
 import BookingDetails from "./pages/BookingDetails";
+import UserProfile from "./pages/UserProfile";
+import BookingTemplates from "./components/BookingTemplates";
 import "./App.css";
 
 function App() {
@@ -61,7 +63,15 @@ function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <div>Profile Page - Coming Soon</div>
+                  <UserProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <ProtectedRoute>
+                  <BookingTemplates />
                 </ProtectedRoute>
               }
             />

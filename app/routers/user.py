@@ -2,12 +2,14 @@
 User management router for profile and booking management.
 """
 
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app import models, auth
 from app.database import get_db
+from app.schemas import UserProfileUpdate, UserProfileResponse
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
@@ -44,24 +46,97 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 
-@router.get("/profile")
-def get_user_profile(current_user: models.User = Depends(get_current_user)):
+@router.get("/profile", response_model=UserProfileResponse)
+def get_user_profile(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
-    Get the current user's profile.
+    Get the current user's profile with extended preferences.
     """
-    return current_user
+    # Get user preferences from database
+    preferences = db.query(models.UserPreference).filter(
+        models.UserPreference.user_id == current_user.id
+    ).all()
+    
+    # Convert preferences to dict
+    prefs_dict = {}
+    for pref in preferences:
+        try:
+            prefs_dict[pref.preference_key] = json.loads(pref.preference_value) if pref.preference_value else None
+        except (json.JSONDecodeError, TypeError):
+            prefs_dict[pref.preference_key] = pref.preference_value
+    
+    # Build response with user data and preferences
+    profile_data = {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "phone": current_user.phone,
+        "date_of_birth": current_user.date_of_birth,
+        "accessibility_needs": current_user.accessibility_needs,
+        "is_active": current_user.is_active,
+        "dining_preferences": prefs_dict.get("dining_preferences"),
+        "notification_preferences": prefs_dict.get("notification_preferences"),
+        "emergency_contact": prefs_dict.get("emergency_contact")
+    }
+    
+    return profile_data
 
 
-@router.patch("/profile")
-def update_user_profile(updates: dict, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.patch("/profile", response_model=UserProfileResponse)
+def update_user_profile(
+    profile_update: UserProfileUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Update the current user's profile.
+    Update the current user's profile with extended preferences.
     """
-    for key, value in updates.items():
-        setattr(current_user, key, value)
-    db.commit()
-    db.refresh(current_user)
-    return current_user
+    try:
+        # Update basic user fields
+        update_data = profile_update.model_dump(exclude_unset=True, exclude_none=True)
+        
+        # Handle direct user fields
+        user_fields = ["first_name", "last_name", "phone", "date_of_birth", "accessibility_needs"]
+        for field in user_fields:
+            if field in update_data:
+                setattr(current_user, field, update_data[field])
+        
+        # Handle preference fields
+        preference_fields = ["dining_preferences", "notification_preferences", "emergency_contact"]
+        for field in preference_fields:
+            if field in update_data:
+                # Check if preference already exists
+                existing_pref = db.query(models.UserPreference).filter(
+                    models.UserPreference.user_id == current_user.id,
+                    models.UserPreference.preference_key == field
+                ).first()
+                
+                if existing_pref:
+                    # Update existing preference
+                    existing_pref.preference_value = json.dumps(update_data[field])
+                else:
+                    # Create new preference
+                    new_pref = models.UserPreference(
+                        user_id=current_user.id,
+                        preference_key=field,
+                        preference_value=json.dumps(update_data[field])
+                    )
+                    db.add(new_pref)
+        
+        # Commit changes
+        db.commit()
+        db.refresh(current_user)
+        
+        # Return updated profile
+        return get_user_profile(current_user, db)
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update profile: {str(e)}"
+        )
 
 
 @router.get("/bookings")

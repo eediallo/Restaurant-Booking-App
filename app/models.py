@@ -8,7 +8,7 @@ proper relationships and constraints.
 Author: AI Assistant
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -36,6 +36,8 @@ class User(Base):
     first_name = Column(String(50))
     last_name = Column(String(50))
     phone = Column(String(20))
+    date_of_birth = Column(Date)
+    accessibility_needs = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)

@@ -1,4 +1,6 @@
 /* App specific styles */
+@import "./styles/mobile-enhancements.css";
+
 .App {
   min-height: 100vh;
   display: flex;

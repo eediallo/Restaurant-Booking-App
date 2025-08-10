@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
+import BookingCard from "../components/BookingCard";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -16,7 +17,7 @@ const Dashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [cancellationReasons, setCancellationReasons] = useState([]);
-  
+
   // New filtering state
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -26,6 +27,17 @@ const Dashboard = () => {
   useEffect(() => {
     fetchUserBookings();
     fetchCancellationReasons();
+
+    // Listen for cancel booking events from BookingCard component
+    const handleCancelBookingEvent = (event) => {
+      handleCancelBooking(event.detail);
+    };
+
+    document.addEventListener("cancelBooking", handleCancelBookingEvent);
+
+    return () => {
+      document.removeEventListener("cancelBooking", handleCancelBookingEvent);
+    };
   }, []);
 
   // Filter and sort bookings whenever filters or bookings change
@@ -34,29 +46,37 @@ const Dashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(booking => 
-        booking.booking_reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.special_requests?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (booking.customer?.first_name + " " + booking.customer?.surname).toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (booking) =>
+          booking.booking_reference
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          booking.special_requests
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (booking.customer?.first_name + " " + booking.customer?.surname)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(booking => 
-        booking.status?.toLowerCase() === statusFilter.toLowerCase()
+      filtered = filtered.filter(
+        (booking) =>
+          booking.status?.toLowerCase() === statusFilter.toLowerCase()
       );
     }
 
     // Apply date range filter
     if (dateRange.start) {
-      filtered = filtered.filter(booking => 
-        new Date(booking.visit_date) >= new Date(dateRange.start)
+      filtered = filtered.filter(
+        (booking) => new Date(booking.visit_date) >= new Date(dateRange.start)
       );
     }
     if (dateRange.end) {
-      filtered = filtered.filter(booking => 
-        new Date(booking.visit_date) <= new Date(dateRange.end)
+      filtered = filtered.filter(
+        (booking) => new Date(booking.visit_date) <= new Date(dateRange.end)
       );
     }
 
@@ -224,7 +244,8 @@ const Dashboard = () => {
           <div className="bookings-stats">
             {userBookings.length > 0 && (
               <span className="booking-count">
-                Showing {filteredBookings.length} of {userBookings.length} bookings
+                Showing {filteredBookings.length} of {userBookings.length}{" "}
+                bookings
               </span>
             )}
           </div>
@@ -243,7 +264,7 @@ const Dashboard = () => {
                   className="search-input"
                 />
               </div>
-              
+
               <div className="filter-controls">
                 <select
                   value={statusFilter}
@@ -279,7 +300,12 @@ const Dashboard = () => {
                     id="start-date"
                     type="date"
                     value={dateRange.start}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({
+                        ...prev,
+                        start: e.target.value,
+                      }))
+                    }
                     className="date-input"
                   />
                 </div>
@@ -289,7 +315,9 @@ const Dashboard = () => {
                     id="end-date"
                     type="date"
                     value={dateRange.end}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({ ...prev, end: e.target.value }))
+                    }
                     className="date-input"
                   />
                 </div>
@@ -341,82 +369,13 @@ const Dashboard = () => {
             ) : (
               <div className="bookings-grid">
                 {filteredBookings.map((booking) => (
-                  <div key={booking.booking_reference} className="booking-card">
-                    <div className="booking-header">
-                      <h3>TheHungryUnicorn</h3>
-                      <span
-                        className={`status ${booking.status?.toLowerCase()}`}
-                      >
-                        {booking.status || "Confirmed"}
-                      </span>
-                    </div>
-
-                    <div className="booking-details">
-                      <div className="detail-item">
-                        <span className="label">Date:</span>
-                        <span className="value">
-                          {formatDate(booking.visit_date)}
-                        </span>
-                      </div>
-
-                      <div className="detail-item">
-                        <span className="label">Time:</span>
-                        <span className="value">
-                          {formatTime(booking.visit_time)}
-                        </span>
-                      </div>
-
-                      <div className="detail-item">
-                        <span className="label">Party Size:</span>
-                        <span className="value">
-                          {booking.party_size} guests
-                        </span>
-                      </div>
-
-                      <div className="detail-item">
-                        <span className="label">Reference:</span>
-                        <span className="value">
-                          {booking.booking_reference}
-                        </span>
-                      </div>
-
-                      {booking.special_requests && (
-                        <div className="detail-item">
-                          <span className="label">Special Requests:</span>
-                          <span className="value">
-                            {booking.special_requests}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="booking-actions">
-                      {booking.status?.toLowerCase() === "confirmed" && (
-                        <>
-                          <button
-                            className="action-btn primary small"
-                            onClick={() => handleEditBooking(booking)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="action-btn danger small"
-                            onClick={() => handleCancelBooking(booking)}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="action-btn secondary small"
-                        onClick={() =>
-                          navigate(`/booking/${booking.booking_reference}`)
-                        }
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
+                  <BookingCard
+                    key={booking.booking_reference}
+                    booking={booking}
+                    onEdit={handleEditBooking}
+                    formatDate={formatDate}
+                    formatTime={formatTime}
+                  />
                 ))}
               </div>
             )}

@@ -283,6 +283,193 @@
   }
 }
 
+/* Enhanced Mobile Styles */
+@media (max-width: 768px) {
+  .booking-details {
+    padding: 1rem;
+  }
+
+  .booking-details-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-btn {
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .booking-details-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .booking-details-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .booking-status-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .booking-status-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .booking-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .info-grid {
+    gap: 1rem;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+  }
+
+  .info-item:last-child {
+    border-bottom: none;
+  }
+
+  .info-item .label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+  }
+
+  .info-item .value {
+    font-size: 1rem;
+    color: #2c3e50;
+    font-weight: 500;
+  }
+
+  .booking-ref {
+    font-family: "Courier New", monospace;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .special-requests {
+    margin: 1.5rem 0;
+  }
+
+  .special-requests-text {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .booking-timestamps {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .timestamp-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .booking-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .action-btn {
+    min-height: 48px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+  }
+
+  .action-btn.primary {
+    order: 1;
+  }
+
+  .action-btn.danger {
+    order: 2;
+  }
+
+  .action-btn.secondary {
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-details {
+    padding: 0.75rem;
+  }
+
+  .booking-details-card {
+    padding: 1.25rem;
+  }
+
+  .booking-details-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .info-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .back-btn {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .back-btn:hover {
+    background: none;
+  }
+
+  .back-btn:active {
+    background: #f8f9fa;
+    transform: scale(0.95);
+  }
+
+  .action-btn:hover {
+    transform: none;
+  }
+
+  .action-btn:active {
+    transform: scale(0.95);
+  }
+}
+
 /* Print styles */
 @media print {
   .booking-details {

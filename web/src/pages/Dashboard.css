@@ -338,6 +338,42 @@
   background: #5a6268;
 }
 
+/* Swipe Hint Styles */
+.swipe-hint {
+  text-align: center;
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #f8f9fa 20%,
+    #f8f9fa 80%,
+    transparent 100%
+  );
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) and (hover: none) {
+  .booking-card:hover .swipe-hint,
+  .booking-card:active .swipe-hint {
+    opacity: 1;
+  }
+
+  .swipe-hint {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .swipe-hint {
+    display: none;
+  }
+}
+
 .loading {
   text-align: center;
   padding: 2rem;

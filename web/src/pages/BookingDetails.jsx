@@ -23,7 +23,8 @@ const BookingDetails = () => {
 
         if (userBooking) {
           // Use the restaurant name from the user's booking data
-          const restaurantNameFromBooking = userBooking.restaurant_name || "TheHungryUnicorn";
+          const restaurantNameFromBooking =
+            userBooking.restaurant_name || "TheHungryUnicorn";
           setRestaurantName(restaurantNameFromBooking);
           const response = await api.get(
             `/api/ConsumerApi/v1/Restaurant/${restaurantNameFromBooking}/Booking/${bookingReference}`

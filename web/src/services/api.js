@@ -57,3 +57,24 @@ api.interceptors.response.use(
 );
 
 export { api };
+
+// User Profile API functions
+export const userAPI = {
+  // Get user profile
+  getProfile: async () => {
+    const response = await api.get("/api/user/profile");
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (profileData) => {
+    const response = await api.patch("/api/user/profile", profileData);
+    return response.data;
+  },
+
+  // Get user bookings
+  getBookings: async () => {
+    const response = await api.get("/api/user/bookings");
+    return response.data;
+  }
+};

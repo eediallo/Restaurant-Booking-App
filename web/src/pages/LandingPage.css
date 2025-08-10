@@ -78,10 +78,19 @@
   line-height: 1.5;
 }
 
-.book-button {
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.book-button,
+.explore-button {
   padding: 1rem 2rem;
   font-size: 1.1rem;
   border-radius: 8px;
+  min-width: 180px;
 }
 
 /* Illustration */

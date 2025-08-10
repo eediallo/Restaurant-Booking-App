@@ -20,23 +20,35 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-
       {/* Main Content */}
       <main className="main-content">
         <div className="content-container">
           <div className="booking-section">
             <h1 className="main-title">Book a Table</h1>
             <p className="subtitle">
-              Reserve your dining experience in advance.
+              Discover amazing restaurants and reserve your dining experience in
+              advance.
             </p>
-            <Button
-              variant="primary"
-              size="lg"
-              className="book-button"
-              onClick={handleBookNow}
-            >
-              {user ? "Book Now" : "Sign in to Book"}
-            </Button>
+            <div className="action-buttons">
+              <Button
+                variant="primary"
+                size="lg"
+                className="book-button"
+                onClick={handleBookNow}
+              >
+                {user ? "Book Now" : "Sign in to Book"}
+              </Button>
+              {user && (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="explore-button"
+                  onClick={() => navigate("/restaurants")}
+                >
+                  Explore Restaurants
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="illustration">

@@ -71,15 +71,12 @@ const Navbar = () => {
               >
                 Find Tables
               </a>
-              <a href="/book" className="nav-link" onClick={closeMobileMenu}>
-                Make Booking
-              </a>
               <a
-                href="/templates"
+                href="/restaurants"
                 className="nav-link"
                 onClick={closeMobileMenu}
               >
-                Quick Book
+                Restaurants
               </a>
 
               <div className="user-dropdown">

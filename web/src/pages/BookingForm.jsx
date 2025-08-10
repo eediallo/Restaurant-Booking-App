@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import Input from "../components/ui/Input";
 import "./BookingForm.css";
 
 const BookingForm = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [bookingData, setBookingData] = useState({
     visitDate: "",
     visitTime: "",
@@ -50,8 +52,11 @@ const BookingForm = () => {
       }
 
       localStorage.removeItem("pendingBooking");
+    } else {
+      // No restaurant context - redirect to availability search
+      navigate("/availability");
     }
-  }, []);
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

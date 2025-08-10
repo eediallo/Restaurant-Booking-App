@@ -1,6 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { AuthContext } from "./AuthContext";
+import React, { useEffect, useState, useContext, createContext } from "react";
 import { authService } from "../services/auth";
+
+// Create the AuthContext
+const AuthContext = createContext(null);
+
+// Custom hook to use the AuthContext
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

@@ -4,14 +4,11 @@ Restaurant Booking Mock API Server.
 A complete FastAPI-based mock server that simulates a restaurant booking system.
 This server provides realistic endpoints for availability checking, booking creation,
 booking management, and cancellation operations.
-
-Author: AI Assistant
-Version: 1.0.0
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import availability, booking, auth, user, restaurant
+from app.routers import availability, booking, auth, user, restaurant, advanced_booking, reviews
 from app.database import engine
 from app.models import Base
 import app.init_db as init_db
@@ -52,6 +49,8 @@ app.include_router(booking.router)
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(restaurant.router)
+app.include_router(advanced_booking.router)
+app.include_router(reviews.router)
 
 
 @app.on_event("startup")

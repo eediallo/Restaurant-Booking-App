@@ -226,6 +226,10 @@ class RestaurantReview(Base):
     service_rating = Column(Integer)  # 1-5 stars
     ambiance_rating = Column(Integer)  # 1-5 stars
     value_rating = Column(Integer)  # 1-5 stars
+    would_recommend = Column(Boolean, default=True)
+    
+    # Additional identifiers
+    booking_reference = Column(String(20), index=True)  # For easy lookup
     
     # Metadata
     is_verified = Column(Boolean, default=False)  # Verified if from actual booking

@@ -60,6 +60,18 @@
   border-color: #dee2e6;
 }
 
+.action-btn.tertiary {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 2px solid #bbdefb;
+}
+
+.action-btn.tertiary:hover {
+  background: #bbdefb;
+  border-color: #90caf9;
+  transform: translateY(-1px);
+}
+
 .action-btn.small {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;

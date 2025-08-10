@@ -244,6 +244,12 @@ const Dashboard = () => {
         >
           Find Available Tables
         </button>
+        <button
+          className="action-btn tertiary"
+          onClick={() => (window.location.href = "/booking-history")}
+        >
+          View Booking History
+        </button>
       </div>
 
       <div className="bookings-section">

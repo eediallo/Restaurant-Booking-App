@@ -10,6 +10,8 @@ const BookingDetails = () => {
   const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [existingReview, setExistingReview] = useState(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -30,6 +32,9 @@ const BookingDetails = () => {
             `/api/ConsumerApi/v1/Restaurant/${restaurantNameFromBooking}/Booking/${bookingReference}`
           );
           setBooking(response.data);
+
+          // Check for existing review
+          await checkExistingReview();
         } else {
           // Fallback to default restaurant if booking not found in user's list
           const defaultRestaurant = "TheHungryUnicorn";
@@ -38,12 +43,30 @@ const BookingDetails = () => {
             `/api/ConsumerApi/v1/Restaurant/${defaultRestaurant}/Booking/${bookingReference}`
           );
           setBooking(response.data);
+
+          // Check for existing review
+          await checkExistingReview();
         }
       } catch (err) {
         setError("Failed to load booking details");
         console.error("Error fetching booking details:", err);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const checkExistingReview = async () => {
+      try {
+        setReviewLoading(true);
+        const reviewResponse = await api.get(
+          `/api/reviews/booking/${bookingReference}`
+        );
+        setExistingReview(reviewResponse.data);
+      } catch (err) {
+        // No review exists - this is expected for many bookings
+        setExistingReview(null);
+      } finally {
+        setReviewLoading(false);
       }
     };
 
@@ -76,6 +99,26 @@ const BookingDetails = () => {
       minute: "2-digit",
       hour12: true,
     });
+  };
+
+  const isBookingCompleted = () => {
+    if (!booking) return false;
+    const bookingDateTime = new Date(
+      `${booking.visit_date}T${booking.visit_time}`
+    );
+    return bookingDateTime < new Date();
+  };
+
+  const canWriteReview = () => {
+    return (
+      isBookingCompleted() &&
+      !existingReview &&
+      booking?.status?.toLowerCase() === "confirmed"
+    );
+  };
+
+  const hasExistingReview = () => {
+    return existingReview !== null;
   };
 
   if (loading) {
@@ -236,6 +279,29 @@ const BookingDetails = () => {
               </button>
             </>
           )}
+
+          {/* Review Actions */}
+          {canWriteReview() && (
+            <button
+              className="action-btn tertiary"
+              onClick={() => navigate(`/review/${bookingReference}`)}
+            >
+              Write a Review
+            </button>
+          )}
+
+          {hasExistingReview() && (
+            <div className="review-info">
+              <p className="review-exists">✓ You have reviewed this booking</p>
+              <button
+                className="action-btn tertiary"
+                onClick={() => navigate(`/review/${bookingReference}`)}
+              >
+                View Your Review
+              </button>
+            </div>
+          )}
+
           <button
             className="action-btn secondary"
             onClick={() => window.print()}

@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import BookingSearch from "./pages/BookingSearch";
 import BookingForm from "./pages/BookingForm";
 import BookingDetails from "./pages/BookingDetails";
+import BookingHistory from "./pages/BookingHistory";
+import ReviewForm from "./pages/ReviewForm";
 import UserProfile from "./pages/UserProfile";
 import BookingTemplates from "./components/BookingTemplates";
 import RestaurantSearch from "./pages/RestaurantSearch";
@@ -64,6 +66,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingDetails />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Phase 4A - Advanced Booking Management */}
+            <Route
+              path="/booking-history"
+              element={
+                <ProtectedRoute>
+                  <BookingHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/review/:bookingReference"
+              element={
+                <ProtectedRoute>
+                  <ReviewForm />
                 </ProtectedRoute>
               }
             />

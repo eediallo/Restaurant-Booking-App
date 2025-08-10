@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
 import Input from "../components/ui/Input";
 import "./BookingForm.css";
@@ -8,6 +8,7 @@ import "./BookingForm.css";
 const BookingForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [bookingData, setBookingData] = useState({
     visitDate: "",
     visitTime: "",
@@ -29,34 +30,56 @@ const BookingForm = () => {
   const [restaurant, setRestaurant] = useState(null);
 
   useEffect(() => {
-    // Check if there's pending booking data from availability search
-    const pendingBooking = localStorage.getItem("pendingBooking");
-    if (pendingBooking) {
-      const data = JSON.parse(pendingBooking);
+    let bookingDataSource = null;
+    let sourceType = "";
 
+    // First check if there's booking data from navigation state
+    if (location.state?.bookingData && location.state?.fromAvailabilitySearch) {
+      bookingDataSource = location.state.bookingData;
+      sourceType = "navigation state";
+    } else {
+      // Fall back to localStorage
+      const pendingBooking = localStorage.getItem("pendingBooking");
+
+      if (pendingBooking) {
+        try {
+          bookingDataSource = JSON.parse(pendingBooking);
+          sourceType = "localStorage";
+        } catch {
+          // Error parsing data, redirect to availability
+          navigate("/availability");
+          return;
+        }
+      }
+    }
+
+    if (bookingDataSource) {
       // Set both booking data and selected slot information
       setBookingData((prev) => ({
         ...prev,
-        visitDate: data.visitDate || prev.visitDate,
-        visitTime: data.visitTime || prev.visitTime,
-        partySize: data.partySize || prev.partySize,
-        channelCode: data.channelCode || prev.channelCode,
+        visitDate: bookingDataSource.visitDate || prev.visitDate,
+        visitTime: bookingDataSource.visitTime || prev.visitTime,
+        partySize: bookingDataSource.partySize || prev.partySize,
+        channelCode: bookingDataSource.channelCode || prev.channelCode,
       }));
 
-      if (data.selectedSlot) {
-        setSelectedSlot(data.selectedSlot);
+      if (bookingDataSource.selectedSlot) {
+        setSelectedSlot(bookingDataSource.selectedSlot);
       }
 
-      if (data.restaurant) {
-        setRestaurant(data.restaurant);
+      if (bookingDataSource.restaurant) {
+        setRestaurant(bookingDataSource.restaurant);
       }
 
-      localStorage.removeItem("pendingBooking");
+      // Clean up localStorage if we used it
+      if (sourceType === "localStorage") {
+        localStorage.removeItem("pendingBooking");
+      }
     } else {
       // No restaurant context - redirect to availability search
       navigate("/availability");
     }
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

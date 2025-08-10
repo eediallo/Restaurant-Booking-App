@@ -96,7 +96,6 @@ const BookingSearch = () => {
         }
       );
 
-      console.log("API Response:", response.data); // Debug log
       setAvailableSlots(response.data.available_slots || []);
     } catch (err) {
       setError("Failed to search availability. Please try again.");
@@ -107,12 +106,20 @@ const BookingSearch = () => {
   };
 
   const handleBookSlot = (slot) => {
-    console.log("Selected slot:", slot); // Debug log
-
     // Get the selected restaurant information
     const restaurant = restaurants.find(
       (r) => r.id.toString() === selectedRestaurant
     );
+
+    if (!restaurant) {
+      setError("Please select a restaurant first");
+      return;
+    }
+
+    if (!searchParams.visitDate || !searchParams.partySize) {
+      setError("Please fill in all search fields");
+      return;
+    }
 
     // Navigate to booking form with pre-filled data
     const bookingData = {
@@ -122,9 +129,9 @@ const BookingSearch = () => {
       channelCode: searchParams.channelCode,
       // Restaurant information
       restaurant: {
-        id: restaurant?.id,
-        name: restaurant?.name || "Unknown Restaurant",
-        cuisine_type: restaurant?.cuisine_type,
+        id: restaurant.id,
+        name: restaurant.name,
+        cuisine_type: restaurant.cuisine_type,
       },
       // Additional context for the booking form
       selectedSlot: {
@@ -137,11 +144,16 @@ const BookingSearch = () => {
       },
     };
 
-    console.log("Booking data to store:", bookingData); // Debug log
-
-    // Store booking data in localStorage for the booking form
+    // Store booking data in localStorage AND navigation state for redundancy
     localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
-    navigate("/book");
+
+    // Navigate with state as backup
+    navigate("/book", {
+      state: {
+        bookingData: bookingData,
+        fromAvailabilitySearch: true,
+      },
+    });
   };
 
   const formatTime = (timeString) => {

@@ -235,7 +235,8 @@ const BookingSearch = () => {
       {searched && !loading && (
         <div className="search-results">
           <h2>
-            Available Times for{" "}
+            Available Times at{" "}
+            {restaurants.find(r => r.id.toString() === selectedRestaurant)?.name || "Selected Restaurant"} for{" "}
             {searchParams.visitDate
               ? formatDate(searchParams.visitDate)
               : "Selected Date"}

@@ -23,7 +23,7 @@ const BookingCard = ({ booking, onEdit, formatDate, formatTime }) => {
   return (
     <div className="booking-card" {...swipeGestures}>
       <div className="booking-header">
-        <h3>TheHungryUnicorn</h3>
+        <h3>{booking.restaurant || booking.restaurant_name || "Restaurant"}</h3>
         <span className={`status ${booking.status?.toLowerCase()}`}>
           {booking.status || "Confirmed"}
         </span>

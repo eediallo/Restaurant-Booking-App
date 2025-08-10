@@ -157,7 +157,7 @@ const Dashboard = () => {
       formData.append("SpecialRequests", editFormData.specialRequests);
 
       await api.patch(
-        `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${selectedBooking.booking_reference}`,
+        `/api/ConsumerApi/v1/Restaurant/${selectedBooking.restaurant || selectedBooking.restaurant_name || "TheHungryUnicorn"}/Booking/${selectedBooking.booking_reference}`,
         formData,
         {
           headers: {
@@ -181,7 +181,7 @@ const Dashboard = () => {
       formData.append("cancellationReasonId", cancellationReasonId);
 
       await api.post(
-        `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${selectedBooking.booking_reference}/Cancel`,
+        `/api/ConsumerApi/v1/Restaurant/${selectedBooking.restaurant || selectedBooking.restaurant_name || "TheHungryUnicorn"}/Booking/${selectedBooking.booking_reference}/Cancel`,
         formData,
         {
           headers: {

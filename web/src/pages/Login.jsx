@@ -88,7 +88,7 @@ const Login = () => {
       <div className="login-container">
         <div className="login-header">
           <h1>Welcome Back</h1>
-          <p>Sign in to your TheHungryUnicorn account</p>
+          <p>Sign in to your restaurant booking account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">

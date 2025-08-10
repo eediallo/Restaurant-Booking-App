@@ -130,7 +130,7 @@ const Register = () => {
     <div className="register-page">
       <div className="register-container">
         <div className="register-header">
-          <h1>Join TheHungryUnicorn</h1>
+          <h1>Join Our Restaurant Network</h1>
           <p>Create your account to start booking tables</p>
         </div>
 

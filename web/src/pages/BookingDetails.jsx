@@ -14,10 +14,26 @@ const BookingDetails = () => {
     const fetchBookingDetails = async () => {
       try {
         setLoading(true);
-        const response = await api.get(
-          `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${bookingReference}`
+        // First try to get booking from user's dashboard to get restaurant info
+        const dashboardResponse = await api.get(`/api/ConsumerApi/v1/Booking`);
+        const userBooking = dashboardResponse.data.find(
+          b => b.booking_reference === bookingReference
         );
-        setBooking(response.data);
+        
+        if (userBooking) {
+          // Use the restaurant name from the user's booking data
+          const restaurantName = userBooking.restaurant || userBooking.restaurant_name || "TheHungryUnicorn";
+          const response = await api.get(
+            `/api/ConsumerApi/v1/Restaurant/${restaurantName}/Booking/${bookingReference}`
+          );
+          setBooking(response.data);
+        } else {
+          // Fallback to default restaurant if booking not found in user's list
+          const response = await api.get(
+            `/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/${bookingReference}`
+          );
+          setBooking(response.data);
+        }
       } catch (err) {
         setError("Failed to load booking details");
         console.error("Error fetching booking details:", err);
@@ -117,7 +133,7 @@ const BookingDetails = () => {
               <div className="info-item">
                 <span className="label">Restaurant:</span>
                 <span className="value">
-                  {booking.restaurant || "TheHungryUnicorn"}
+                  {booking.restaurant || booking.restaurant_name || "Restaurant"}
                 </span>
               </div>
               <div className="info-item">

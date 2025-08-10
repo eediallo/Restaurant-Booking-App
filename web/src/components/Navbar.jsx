@@ -30,7 +30,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="navbar-brand">
-          <a href="/">TheHungryUnicorn</a>
+          <a href="/">Restaurant Booking</a>
         </div>
 
         {/* Mobile Menu Button */}

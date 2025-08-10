@@ -77,7 +77,7 @@ async def create_review(
                 detail="Booking not found"
             )
         
-        if booking.customer_name != current_user.full_name:
+        if booking.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only review your own bookings"
@@ -105,7 +105,7 @@ async def create_review(
         
         # Get restaurant information
         restaurant = db.query(Restaurant).filter(
-            Restaurant.name == booking.restaurant_name
+            Restaurant.id == booking.restaurant_id
         ).first()
         
         if not restaurant:

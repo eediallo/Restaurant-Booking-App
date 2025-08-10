@@ -42,6 +42,18 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)
 
+    @property
+    def full_name(self):
+        """Return the full name of the user."""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        else:
+            return self.username
+
     # Relationships
     bookings = relationship("Booking", back_populates="user")
     preferences = relationship("UserPreference", back_populates="user")

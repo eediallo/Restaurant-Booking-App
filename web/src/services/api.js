@@ -76,5 +76,5 @@ export const userAPI = {
   getBookings: async () => {
     const response = await api.get("/api/user/bookings");
     return response.data;
-  }
+  },
 };

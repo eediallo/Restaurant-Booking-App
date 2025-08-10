@@ -219,7 +219,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>Welcome back, {user?.username}!</h1>
+        <h1>Welcome back, {user?.first_name || user?.username}!</h1>
         <p>Manage your reservations and discover new dining experiences</p>
       </div>
 

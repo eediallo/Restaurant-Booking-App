@@ -46,7 +46,7 @@ const UserProfile = () => {
       setLoading(true);
       // Fetch user profile from API
       const userData = await userAPI.getProfile();
-      
+
       setProfileData({
         username: userData.username || "",
         email: userData.email || "",

@@ -65,11 +65,46 @@ def update_user_profile(updates: dict, current_user: models.User = Depends(get_c
 
 
 @router.get("/bookings")
-def get_user_bookings(current_user: models.User = Depends(get_current_user)):
+def get_user_bookings(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     Get the current user's bookings.
     """
-    return current_user.bookings
+    try:
+        # Fetch bookings for the current user with relationships loaded
+        bookings = db.query(models.Booking).filter(
+            models.Booking.user_id == current_user.id
+        ).join(models.Restaurant).join(models.Customer).all()
+        
+        # Return formatted booking data
+        booking_list = []
+        for booking in bookings:
+            booking_data = {
+                "id": booking.id,
+                "booking_reference": booking.booking_reference,
+                "restaurant_name": booking.restaurant.name,
+                "visit_date": booking.visit_date.isoformat(),
+                "visit_time": booking.visit_time.isoformat(),
+                "party_size": booking.party_size,
+                "status": booking.status,
+                "special_requests": booking.special_requests,
+                "customer": {
+                    "title": booking.customer.title,
+                    "first_name": booking.customer.first_name,
+                    "surname": booking.customer.surname,
+                    "email": booking.customer.email,
+                    "mobile": booking.customer.mobile
+                },
+                "created_at": booking.created_at.isoformat() if booking.created_at else None
+            }
+            booking_list.append(booking_data)
+        
+        return booking_list
+    except Exception as e:
+        print(f"Error fetching user bookings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch bookings")
 
 
 @router.delete("/account")

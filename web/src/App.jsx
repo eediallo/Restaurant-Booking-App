@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BookingSearch from "./pages/BookingSearch";
 import BookingForm from "./pages/BookingForm";
+import BookingDetails from "./pages/BookingDetails";
 import "./App.css";
 
 function App() {
@@ -43,6 +44,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking/:bookingReference"
+              element={
+                <ProtectedRoute>
+                  <BookingDetails />
                 </ProtectedRoute>
               }
             />

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userBookings, setUserBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -169,7 +171,7 @@ const Dashboard = () => {
                 <p>Ready to make your first booking?</p>
                 <button
                   className="action-btn primary"
-                  onClick={() => (window.location.href = "/book")}
+                  onClick={() => navigate("/availability")}
                 >
                   Book a Table
                 </button>
@@ -245,9 +247,7 @@ const Dashboard = () => {
                       )}
                       <button
                         className="action-btn secondary small"
-                        onClick={() =>
-                          (window.location.href = `/booking/${booking.booking_reference}`)
-                        }
+                        onClick={() => navigate(`/booking/${booking.booking_reference}`)}
                       >
                         View Details
                       </button>

@@ -2,7 +2,7 @@ import { api } from "./api";
 
 class AuthService {
   async login(email, password) {
-    const response = await api.post("/auth/login", {
+    const response = await api.post("/api/auth/login", {
       username: email, // Backend expects username field but uses email
       password,
     });
@@ -10,34 +10,34 @@ class AuthService {
   }
 
   async register(userData) {
-    const response = await api.post("/auth/register", userData);
+    const response = await api.post("/api/auth/register", userData);
     return response.data;
   }
 
   async logout() {
-    const response = await api.post("/auth/logout");
+    const response = await api.post("/api/auth/logout");
     return response.data;
   }
 
   async getCurrentUser() {
-    const response = await api.get("/auth/me");
+    const response = await api.get("/api/auth/me");
     return response.data;
   }
 
   async updateProfile(profileData) {
-    const response = await api.put("/user/profile", profileData);
+    const response = await api.put("/api/user/profile", profileData);
     return response.data;
   }
 
   async refreshToken(refreshToken) {
-    const response = await api.post("/auth/refresh", {
+    const response = await api.post("/api/auth/refresh", {
       refresh_token: refreshToken,
     });
     return response.data;
   }
 
   async changePassword(currentPassword, newPassword) {
-    const response = await api.put("/user/password", {
+    const response = await api.put("/api/user/password", {
       current_password: currentPassword,
       new_password: newPassword,
     });

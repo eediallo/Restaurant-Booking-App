@@ -11,7 +11,7 @@ from sqlalchemy import or_, and_
 from app import models
 from app.database import get_db
 
-router = APIRouter(prefix="/restaurants", tags=["restaurants"])
+router = APIRouter(prefix="/api/restaurants", tags=["restaurants"])
 
 
 @router.get("/")

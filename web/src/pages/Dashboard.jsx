@@ -8,6 +8,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userBookings, setUserBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
@@ -15,11 +16,72 @@ const Dashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [cancellationReasons, setCancellationReasons] = useState([]);
+  
+  // New filtering state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [sortBy, setSortBy] = useState("date-desc");
 
   useEffect(() => {
     fetchUserBookings();
     fetchCancellationReasons();
   }, []);
+
+  // Filter and sort bookings whenever filters or bookings change
+  useEffect(() => {
+    let filtered = [...userBookings];
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(booking => 
+        booking.booking_reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.special_requests?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (booking.customer?.first_name + " " + booking.customer?.surname).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(booking => 
+        booking.status?.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    // Apply date range filter
+    if (dateRange.start) {
+      filtered = filtered.filter(booking => 
+        new Date(booking.visit_date) >= new Date(dateRange.start)
+      );
+    }
+    if (dateRange.end) {
+      filtered = filtered.filter(booking => 
+        new Date(booking.visit_date) <= new Date(dateRange.end)
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "date-asc":
+          return new Date(a.visit_date) - new Date(b.visit_date);
+        case "date-desc":
+          return new Date(b.visit_date) - new Date(a.visit_date);
+        case "created-asc":
+          return new Date(a.created_at) - new Date(b.created_at);
+        case "created-desc":
+          return new Date(b.created_at) - new Date(a.created_at);
+        case "party-size-asc":
+          return a.party_size - b.party_size;
+        case "party-size-desc":
+          return b.party_size - a.party_size;
+        default:
+          return new Date(b.visit_date) - new Date(a.visit_date);
+      }
+    });
+
+    setFilteredBookings(filtered);
+  }, [userBookings, searchTerm, statusFilter, dateRange, sortBy]);
 
   const fetchUserBookings = async () => {
     try {
@@ -157,7 +219,92 @@ const Dashboard = () => {
       </div>
 
       <div className="bookings-section">
-        <h2>Your Reservations</h2>
+        <div className="bookings-header">
+          <h2>Your Reservations</h2>
+          <div className="bookings-stats">
+            {userBookings.length > 0 && (
+              <span className="booking-count">
+                Showing {filteredBookings.length} of {userBookings.length} bookings
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Filtering and Search Controls */}
+        {userBookings.length > 0 && (
+          <div className="booking-filters">
+            <div className="filter-row">
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="Search by reference, name, or special requests..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              
+              <div className="filter-controls">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="all">All Status</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="date-desc">Newest First</option>
+                  <option value="date-asc">Oldest First</option>
+                  <option value="created-desc">Recently Created</option>
+                  <option value="created-asc">Oldest Created</option>
+                  <option value="party-size-desc">Largest Party</option>
+                  <option value="party-size-asc">Smallest Party</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="date-filter-row">
+              <div className="date-filters">
+                <div className="date-input-group">
+                  <label htmlFor="start-date">From:</label>
+                  <input
+                    id="start-date"
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="date-input"
+                  />
+                </div>
+                <div className="date-input-group">
+                  <label htmlFor="end-date">To:</label>
+                  <input
+                    id="end-date"
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="date-input"
+                  />
+                </div>
+                {(dateRange.start || dateRange.end) && (
+                  <button
+                    onClick={() => setDateRange({ start: "", end: "" })}
+                    className="clear-dates-btn"
+                  >
+                    Clear Dates
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {loading && <div className="loading">Loading your bookings...</div>}
 
@@ -176,9 +323,24 @@ const Dashboard = () => {
                   Book a Table
                 </button>
               </div>
+            ) : filteredBookings.length === 0 ? (
+              <div className="no-bookings">
+                <h3>No bookings match your filters</h3>
+                <p>Try adjusting your search or filter criteria.</p>
+                <button
+                  className="action-btn secondary"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setDateRange({ start: "", end: "" });
+                  }}
+                >
+                  Clear All Filters
+                </button>
+              </div>
             ) : (
               <div className="bookings-grid">
-                {userBookings.map((booking) => (
+                {filteredBookings.map((booking) => (
                   <div key={booking.booking_reference} className="booking-card">
                     <div className="booking-header">
                       <h3>TheHungryUnicorn</h3>

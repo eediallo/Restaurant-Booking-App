@@ -12,6 +12,8 @@ import BookingForm from "./pages/BookingForm";
 import BookingDetails from "./pages/BookingDetails";
 import UserProfile from "./pages/UserProfile";
 import BookingTemplates from "./components/BookingTemplates";
+import RestaurantSearch from "./pages/RestaurantSearch";
+import RestaurantDetails from "./pages/RestaurantDetails";
 import "./App.css";
 
 function App() {
@@ -42,6 +44,14 @@ function App() {
               }
             />
             <Route
+              path="/availability/:restaurantName"
+              element={
+                <ProtectedRoute>
+                  <BookingSearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/book"
               element={
                 <ProtectedRoute>
@@ -54,6 +64,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingDetails />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Restaurant Discovery Routes - Phase 3B */}
+            <Route
+              path="/restaurants"
+              element={
+                <ProtectedRoute>
+                  <RestaurantSearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/restaurants/:id"
+              element={
+                <ProtectedRoute>
+                  <RestaurantDetails />
                 </ProtectedRoute>
               }
             />

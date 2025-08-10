@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { api } from "../services/api";
 import "./BookingSearch.css";
 
 const BookingSearch = () => {
   const navigate = useNavigate();
+  const [urlParams] = useSearchParams();
+  const { restaurantName } = useParams(); // Get restaurant name from URL path
+  const restaurantId = urlParams.get("restaurant");
+
+  const [selectedRestaurant, setSelectedRestaurant] = useState(
+    restaurantId || ""
+  );
+  const [restaurants, setRestaurants] = useState([]);
   const [searchParams, setSearchParams] = useState({
     visitDate: "",
     visitTime: "",
@@ -13,8 +21,38 @@ const BookingSearch = () => {
   });
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+
+  // Load restaurants on component mount
+  useEffect(() => {
+    loadRestaurants();
+  }, []);
+
+  // Handle restaurant pre-selection from URL
+  useEffect(() => {
+    if (restaurantName && restaurants.length > 0) {
+      // Find restaurant by name and select it
+      const restaurant = restaurants.find((r) => r.name === restaurantName);
+      if (restaurant) {
+        setSelectedRestaurant(restaurant.id.toString());
+      }
+    }
+  }, [restaurantName, restaurants]);
+
+  const loadRestaurants = async () => {
+    setLoadingRestaurants(true);
+    try {
+      const response = await api.get("/restaurants/");
+      setRestaurants(response.data.restaurants || []);
+    } catch (err) {
+      console.error("Error loading restaurants:", err);
+      setError("Failed to load restaurants. Please try again.");
+    } finally {
+      setLoadingRestaurants(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,6 +64,12 @@ const BookingSearch = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+
+    if (!selectedRestaurant) {
+      setError("Please select a restaurant first.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSearched(true);
@@ -36,8 +80,14 @@ const BookingSearch = () => {
       formData.append("PartySize", searchParams.partySize);
       formData.append("ChannelCode", searchParams.channelCode);
 
+      // Find the selected restaurant to get its name
+      const restaurant = restaurants.find(
+        (r) => r.id.toString() === selectedRestaurant
+      );
+      const restaurantName = restaurant ? restaurant.name : selectedRestaurant;
+
       const response = await api.post(
-        "/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/AvailabilitySearch",
+        `/api/ConsumerApi/v1/Restaurant/${restaurantName}/AvailabilitySearch`,
         formData,
         {
           headers: {
@@ -59,12 +109,23 @@ const BookingSearch = () => {
   const handleBookSlot = (slot) => {
     console.log("Selected slot:", slot); // Debug log
 
+    // Get the selected restaurant information
+    const restaurant = restaurants.find(
+      (r) => r.id.toString() === selectedRestaurant
+    );
+
     // Navigate to booking form with pre-filled data
     const bookingData = {
       visitDate: searchParams.visitDate,
       visitTime: slot.time,
       partySize: searchParams.partySize,
       channelCode: searchParams.channelCode,
+      // Restaurant information
+      restaurant: {
+        id: restaurant?.id,
+        name: restaurant?.name || "Unknown Restaurant",
+        cuisine_type: restaurant?.cuisine_type,
+      },
       // Additional context for the booking form
       selectedSlot: {
         time: slot.time,
@@ -107,10 +168,33 @@ const BookingSearch = () => {
     <div className="booking-search">
       <div className="search-header">
         <h1>Find Available Tables</h1>
-        <p>Search for available dining times at TheHungryUnicorn</p>
+        <p>Search for available dining times at your chosen restaurant</p>
       </div>
 
       <form onSubmit={handleSearch} className="search-form">
+        <div className="form-group">
+          <label htmlFor="restaurant">Restaurant</label>
+          <select
+            id="restaurant"
+            name="restaurant"
+            value={selectedRestaurant}
+            onChange={(e) => setSelectedRestaurant(e.target.value)}
+            required
+            disabled={loadingRestaurants}
+          >
+            <option value="">
+              {loadingRestaurants
+                ? "Loading restaurants..."
+                : "Select a restaurant"}
+            </option>
+            {restaurants.map((restaurant) => (
+              <option key={restaurant.id} value={restaurant.id}>
+                {restaurant.name} - {restaurant.cuisine_type}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="form-group">
           <label htmlFor="visitDate">Visit Date</label>
           <input

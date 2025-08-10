@@ -58,6 +58,13 @@ const Navbar = () => {
                 Dashboard
               </a>
               <a
+                href="/restaurants"
+                className="nav-link"
+                onClick={closeMobileMenu}
+              >
+                Restaurants
+              </a>
+              <a
                 href="/availability"
                 className="nav-link"
                 onClick={closeMobileMenu}

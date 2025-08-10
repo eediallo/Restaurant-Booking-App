@@ -24,6 +24,7 @@ const BookingForm = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
 
   useEffect(() => {
     // Check if there's pending booking data from availability search
@@ -42,6 +43,10 @@ const BookingForm = () => {
 
       if (data.selectedSlot) {
         setSelectedSlot(data.selectedSlot);
+      }
+
+      if (data.restaurant) {
+        setRestaurant(data.restaurant);
       }
 
       localStorage.removeItem("pendingBooking");
@@ -80,8 +85,11 @@ const BookingForm = () => {
       formData.append("Customer[Mobile]", bookingData.mobile);
       formData.append("Customer[Email]", bookingData.email);
 
+      // Use restaurant name from the pending booking, fallback to default
+      const restaurantName = restaurant?.name || "TheHungryUnicorn"; // Default to original restaurant if none selected
+
       const response = await api.post(
-        "/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/BookingWithStripeToken",
+        `/api/ConsumerApi/v1/Restaurant/${restaurantName}/BookingWithStripeToken`,
         formData,
         {
           headers: {
@@ -129,9 +137,9 @@ const BookingForm = () => {
 
   return (
     <div className="booking-form">
-      <div className="form-header">
-        <h1>Make a Reservation</h1>
-        <p>Book your table at TheHungryUnicorn</p>
+      <div className="booking-header">
+        <h1>Complete Your Booking</h1>
+        <p>Book your table at {restaurant?.name || "our restaurant"}</p>
       </div>
 
       {success && (
@@ -169,7 +177,9 @@ const BookingForm = () => {
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">Restaurant:</span>
-                  <span className="summary-value">TheHungryUnicorn</span>
+                  <span className="summary-value">
+                    {restaurant?.name || "Restaurant"}
+                  </span>
                 </div>
               </div>
             </div>

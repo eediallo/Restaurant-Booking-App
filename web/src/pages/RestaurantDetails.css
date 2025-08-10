@@ -27,6 +27,8 @@
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
 }
 
 .back-btn:hover {
@@ -36,6 +38,7 @@
 
 .hero-content {
   max-width: 800px;
+  margin-top: 1rem;
 }
 
 .restaurant-header {
@@ -43,6 +46,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1.5rem;
+  gap: 2rem;
 }
 
 .restaurant-header h1 {
@@ -50,10 +54,13 @@
   font-weight: 700;
   margin: 0;
   flex: 1;
+  line-height: 1.1;
 }
 
 .restaurant-rating {
   text-align: right;
+  flex-shrink: 0;
+  min-width: 200px;
 }
 
 .stars {
@@ -409,6 +416,57 @@
   background: #f8d7da;
   border-radius: 8px;
   margin-bottom: 2rem;
+}
+
+/* Large Screen Optimizations */
+@media (min-width: 1200px) {
+  .restaurant-hero {
+    padding: 3rem;
+  }
+  
+  .back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    margin-bottom: 0;
+  }
+  
+  .hero-content {
+    max-width: 900px;
+    margin-top: 4rem;
+  }
+  
+  .restaurant-header h1 {
+    font-size: 3.5rem;
+  }
+  
+  .primary-actions {
+    justify-content: flex-start;
+    gap: 2rem;
+  }
+  
+  .content-grid {
+    gap: 3rem;
+  }
+}
+
+/* Medium to Large Screens */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .restaurant-hero {
+    padding: 2.5rem;
+  }
+  
+  .hero-content {
+    margin-top: 1.5rem;
+  }
+  
+  .restaurant-header {
+    gap: 2rem;
+  }
+  
+  .restaurant-header h1 {
+    font-size: 2.8rem;
+  }
 }
 
 /* Mobile Responsive */

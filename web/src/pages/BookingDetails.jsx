@@ -69,7 +69,7 @@ const BookingDetails = () => {
     return (
       <div className="booking-details">
         <div className="error-message">{error}</div>
-        <button 
+        <button
           className="action-btn secondary"
           onClick={() => navigate("/dashboard")}
         >
@@ -83,7 +83,7 @@ const BookingDetails = () => {
     return (
       <div className="booking-details">
         <div className="error-message">Booking not found</div>
-        <button 
+        <button
           className="action-btn secondary"
           onClick={() => navigate("/dashboard")}
         >
@@ -96,10 +96,7 @@ const BookingDetails = () => {
   return (
     <div className="booking-details">
       <div className="booking-details-header">
-        <button 
-          className="back-btn"
-          onClick={() => navigate("/dashboard")}
-        >
+        <button className="back-btn" onClick={() => navigate("/dashboard")}>
           ← Back to Dashboard
         </button>
         <h1>Booking Details</h1>
@@ -119,7 +116,9 @@ const BookingDetails = () => {
             <div className="info-grid">
               <div className="info-item">
                 <span className="label">Restaurant:</span>
-                <span className="value">{booking.restaurant || "TheHungryUnicorn"}</span>
+                <span className="value">
+                  {booking.restaurant || "TheHungryUnicorn"}
+                </span>
               </div>
               <div className="info-item">
                 <span className="label">Date:</span>
@@ -135,7 +134,9 @@ const BookingDetails = () => {
               </div>
               <div className="info-item">
                 <span className="label">Reference Number:</span>
-                <span className="value booking-ref">{booking.booking_reference}</span>
+                <span className="value booking-ref">
+                  {booking.booking_reference}
+                </span>
               </div>
             </div>
           </div>
@@ -188,7 +189,9 @@ const BookingDetails = () => {
           {booking.updated_at && booking.updated_at !== booking.created_at && (
             <div className="timestamp-item">
               <span className="label">Last Modified:</span>
-              <span className="value">{formatDateTime(booking.updated_at)}</span>
+              <span className="value">
+                {formatDateTime(booking.updated_at)}
+              </span>
             </div>
           )}
         </div>
@@ -196,21 +199,25 @@ const BookingDetails = () => {
         <div className="booking-actions">
           {booking.status?.toLowerCase() === "confirmed" && (
             <>
-              <button 
+              <button
                 className="action-btn primary"
-                onClick={() => navigate(`/booking/${booking.booking_reference}/edit`)}
+                onClick={() =>
+                  navigate(`/booking/${booking.booking_reference}/edit`)
+                }
               >
                 Edit Booking
               </button>
-              <button 
+              <button
                 className="action-btn danger"
-                onClick={() => navigate(`/booking/${booking.booking_reference}/cancel`)}
+                onClick={() =>
+                  navigate(`/booking/${booking.booking_reference}/cancel`)
+                }
               >
                 Cancel Booking
               </button>
             </>
           )}
-          <button 
+          <button
             className="action-btn secondary"
             onClick={() => window.print()}
           >

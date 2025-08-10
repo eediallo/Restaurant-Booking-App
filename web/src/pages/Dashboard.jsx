@@ -247,7 +247,9 @@ const Dashboard = () => {
                       )}
                       <button
                         className="action-btn secondary small"
-                        onClick={() => navigate(`/booking/${booking.booking_reference}`)}
+                        onClick={() =>
+                          navigate(`/booking/${booking.booking_reference}`)
+                        }
                       >
                         View Details
                       </button>

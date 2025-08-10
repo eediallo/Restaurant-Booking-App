@@ -78,7 +78,7 @@ function App() {
               }
             />
             <Route
-              path="/restaurants/:id"
+              path="/restaurant/:restaurantName"
               element={
                 <ProtectedRoute>
                   <RestaurantDetails />

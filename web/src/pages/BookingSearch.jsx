@@ -44,7 +44,7 @@ const BookingSearch = () => {
   const loadRestaurants = async () => {
     setLoadingRestaurants(true);
     try {
-      const response = await api.get("/restaurants/");
+      const response = await api.get("/api/restaurants/");
       setRestaurants(response.data.restaurants || []);
     } catch (err) {
       console.error("Error loading restaurants:", err);
@@ -236,7 +236,9 @@ const BookingSearch = () => {
         <div className="search-results">
           <h2>
             Available Times at{" "}
-            {restaurants.find(r => r.id.toString() === selectedRestaurant)?.name || "Selected Restaurant"} for{" "}
+            {restaurants.find((r) => r.id.toString() === selectedRestaurant)
+              ?.name || "Selected Restaurant"}{" "}
+            for{" "}
             {searchParams.visitDate
               ? formatDate(searchParams.visitDate)
               : "Selected Date"}

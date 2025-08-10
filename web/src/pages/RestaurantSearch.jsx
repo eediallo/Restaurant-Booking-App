@@ -27,8 +27,24 @@ const RestaurantSearch = () => {
   const fetchRestaurants = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/restaurants/");
-      setRestaurants(response.data.restaurants || response.data);
+
+      // Build params object, only include non-empty values
+      const params = {
+        limit: 50,
+      };
+
+      if (selectedCuisine) params.cuisine_type = selectedCuisine;
+      if (selectedLocation) params.location = selectedLocation;
+      if (selectedPriceRange) params.price_range = selectedPriceRange;
+      if (selectedFeatures.length > 0)
+        params.features = selectedFeatures.join(",");
+      if (selectedDietary.length > 0)
+        params.dietary_options = selectedDietary.join(",");
+      if (minRating) params.min_rating = parseInt(minRating);
+      if (searchTerm) params.search = searchTerm;
+
+      const response = await api.get("/api/restaurants/", { params });
+      setRestaurants(response.data.restaurants || []);
     } catch (err) {
       setError("Failed to load restaurants");
       console.error("Error fetching restaurants:", err);
@@ -40,9 +56,9 @@ const RestaurantSearch = () => {
   const fetchFilterOptions = async () => {
     try {
       const [cuisinesRes, locationsRes, priceRangesRes] = await Promise.all([
-        api.get("/restaurants/search/cuisines"),
-        api.get("/restaurants/search/locations"),
-        api.get("/restaurants/search/price-ranges"),
+        api.get("/api/restaurants/search/cuisines"),
+        api.get("/api/restaurants/search/locations"),
+        api.get("/api/restaurants/search/price-ranges"),
       ]);
 
       setCuisines(cuisinesRes.data);
@@ -58,80 +74,27 @@ const RestaurantSearch = () => {
     fetchFilterOptions();
   }, []);
 
-  const applyFilters = React.useCallback(() => {
-    let filtered = [...restaurants];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (restaurant) =>
-          restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          restaurant.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          restaurant.cuisine_type
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-      );
+  // Trigger search when filters change
+  useEffect(() => {
+    if (restaurants.length > 0) {
+      // Only search after initial load
+      fetchRestaurants();
     }
-
-    // Cuisine filter
-    if (selectedCuisine) {
-      filtered = filtered.filter(
-        (restaurant) => restaurant.cuisine_type === selectedCuisine
-      );
-    }
-
-    // Location filter
-    if (selectedLocation) {
-      filtered = filtered.filter(
-        (restaurant) => restaurant.location === selectedLocation
-      );
-    }
-
-    // Price range filter
-    if (selectedPriceRange) {
-      filtered = filtered.filter(
-        (restaurant) => restaurant.price_range === selectedPriceRange
-      );
-    }
-
-    // Rating filter
-    if (minRating) {
-      filtered = filtered.filter(
-        (restaurant) => restaurant.average_rating >= parseInt(minRating)
-      );
-    }
-
-    // Features filter
-    if (selectedFeatures.length > 0) {
-      filtered = filtered.filter((restaurant) =>
-        selectedFeatures.every((feature) =>
-          restaurant.features.includes(feature)
-        )
-      );
-    }
-
-    // Dietary options filter
-    if (selectedDietary.length > 0) {
-      filtered = filtered.filter((restaurant) =>
-        selectedDietary.every((dietary) =>
-          restaurant.dietary_options.includes(dietary)
-        )
-      );
-    }
-
-    setFilteredRestaurants(filtered);
   }, [
-    restaurants,
-    searchTerm,
     selectedCuisine,
     selectedLocation,
     selectedPriceRange,
-    minRating,
     selectedFeatures,
     selectedDietary,
+    minRating,
+    searchTerm,
   ]);
+
+  const applyFilters = React.useCallback(() => {
+    // Since we're now doing server-side filtering, this function is simplified
+    // The filteredRestaurants will be the same as restaurants from the API
+    setFilteredRestaurants(restaurants);
+  }, [restaurants]);
 
   useEffect(() => {
     applyFilters();
@@ -164,8 +127,13 @@ const RestaurantSearch = () => {
   };
 
   const handleRestaurantSelect = (restaurant) => {
+    // Navigate to restaurant details page using restaurant name
+    navigate(`/restaurant/${encodeURIComponent(restaurant.name)}`);
+  };
+
+  const handleQuickBook = (restaurant) => {
     // Navigate to availability search for this restaurant
-    navigate(`/availability/${restaurant.microsite_name}`, {
+    navigate(`/availability/${restaurant.name}`, {
       state: { restaurant },
     });
   };
@@ -376,7 +344,7 @@ const RestaurantSearch = () => {
                       className="action-btn primary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRestaurantSelect(restaurant);
+                        handleQuickBook(restaurant);
                       }}
                     >
                       Check Availability
@@ -385,7 +353,9 @@ const RestaurantSearch = () => {
                       className="action-btn secondary"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/restaurant/${restaurant.id}`);
+                        navigate(
+                          `/restaurant/${encodeURIComponent(restaurant.name)}`
+                        );
                       }}
                     >
                       View Details

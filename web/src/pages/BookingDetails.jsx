@@ -17,12 +17,15 @@ const BookingDetails = () => {
         // First try to get booking from user's dashboard to get restaurant info
         const dashboardResponse = await api.get(`/api/ConsumerApi/v1/Booking`);
         const userBooking = dashboardResponse.data.find(
-          b => b.booking_reference === bookingReference
+          (b) => b.booking_reference === bookingReference
         );
-        
+
         if (userBooking) {
           // Use the restaurant name from the user's booking data
-          const restaurantName = userBooking.restaurant || userBooking.restaurant_name || "TheHungryUnicorn";
+          const restaurantName =
+            userBooking.restaurant ||
+            userBooking.restaurant_name ||
+            "TheHungryUnicorn";
           const response = await api.get(
             `/api/ConsumerApi/v1/Restaurant/${restaurantName}/Booking/${bookingReference}`
           );
@@ -133,7 +136,9 @@ const BookingDetails = () => {
               <div className="info-item">
                 <span className="label">Restaurant:</span>
                 <span className="value">
-                  {booking.restaurant || booking.restaurant_name || "Restaurant"}
+                  {booking.restaurant ||
+                    booking.restaurant_name ||
+                    "Restaurant"}
                 </span>
               </div>
               <div className="info-item">

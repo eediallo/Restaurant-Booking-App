@@ -4,7 +4,7 @@ import { api } from "../services/api";
 import "./RestaurantDetails.css";
 
 const RestaurantDetails = () => {
-  const { restaurantId } = useParams();
+  const { restaurantName } = useParams(); // Use restaurantName to match the route parameter
   const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,15 +13,38 @@ const RestaurantDetails = () => {
   const fetchRestaurantDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/restaurants/${restaurantId}`);
-      setRestaurant(response.data);
+
+      // First, search for the restaurant by exact name to get its ID
+      const searchResponse = await api.get(
+        `/api/restaurants?search=${encodeURIComponent(
+          restaurantName
+        )}&limit=100`
+      );
+      const restaurants =
+        searchResponse.data.restaurants || searchResponse.data;
+
+      // Find exact match by name
+      const targetRestaurant = restaurants.find(
+        (r) => r.name === restaurantName
+      );
+
+      if (!targetRestaurant) {
+        setError("Restaurant not found");
+        return;
+      }
+
+      // Now get detailed information using the restaurant ID
+      const detailResponse = await api.get(
+        `/api/restaurants/${targetRestaurant.id}`
+      );
+      setRestaurant(detailResponse.data);
     } catch (err) {
       setError("Failed to load restaurant details");
       console.error("Error fetching restaurant details:", err);
     } finally {
       setLoading(false);
     }
-  }, [restaurantId]);
+  }, [restaurantName]);
 
   useEffect(() => {
     fetchRestaurantDetails();
@@ -62,7 +85,7 @@ const RestaurantDetails = () => {
   };
 
   const handleBookTable = () => {
-    navigate(`/availability/${restaurant.microsite_name}`, {
+    navigate(`/availability/${restaurant.name}`, {
       state: { restaurant },
     });
   };

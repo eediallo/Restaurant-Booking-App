@@ -16,7 +16,7 @@ const Dashboard = () => {
   const fetchUserBookings = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/auth/bookings");
+      const response = await api.get("/api/user/bookings");
       setUserBookings(response.data);
     } catch (err) {
       setError("Failed to load your bookings");

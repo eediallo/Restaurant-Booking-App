@@ -8,10 +8,13 @@ booking management, and cancellation operations.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.routers import availability, booking, auth, user, restaurant, advanced_booking, reviews
 from app.database import engine
 from app.models import Base
 import app.init_db as init_db
+import os
 
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -30,18 +33,16 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # React default port
-        "http://localhost:5173",  # Vite default port
-        "http://localhost:5174",  # Alternative Vite port
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=["*"],  # Allow all origins in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for the React frontend
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Include API routers
 app.include_router(availability.router)
@@ -101,3 +102,26 @@ async def root() -> dict:
             "redoc": "/redoc"
         }
     }
+
+
+@app.get("/app/{path:path}")
+async def serve_react_app(path: str):
+    """Serve React app for all non-API routes."""
+    static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+    file_path = os.path.join(static_dir, path)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(file_path)
+    else:
+        # Return index.html for client-side routing
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        else:
+            return {"message": "Frontend not available"}
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for deployment platforms."""
+    return {"status": "healthy", "message": "Restaurant Booking API is running"}

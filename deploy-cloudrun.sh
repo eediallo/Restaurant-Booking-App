@@ -10,13 +10,30 @@ PROJECT_ID=${1:-"restaurant-booking-468706"}
 SERVICE_NAME="restaurant-booking-api"
 REGION="europe-west1"
 IMAGE_TAG=${2:-"latest"}
-IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME:$IMAGE_TAG"
+ARTIFACT_REGISTRY_REPO="restaurant-booking"
+ARTIFACT_REGISTRY_LOCATION="europe-west1"
+IMAGE_NAME="$ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REGISTRY_REPO/$SERVICE_NAME:$IMAGE_TAG"
 
 echo "Deploying Restaurant Booking App to Google Cloud Run"
 echo "Project ID: $PROJECT_ID"
 echo "Service Name: $SERVICE_NAME"
 echo "Region: $REGION"
 echo "Image Tag: $IMAGE_TAG"
+echo "Image URL: $IMAGE_NAME"
+
+# Configure Docker for Artifact Registry
+echo "Configuring Docker for Artifact Registry..."
+gcloud auth configure-docker $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev
+
+# Create Artifact Registry repository if it doesn't exist
+echo "Ensuring Artifact Registry repository exists..."
+gcloud artifacts repositories describe $ARTIFACT_REGISTRY_REPO \
+  --location=$ARTIFACT_REGISTRY_LOCATION \
+  --format="value(name)" || \
+gcloud artifacts repositories create $ARTIFACT_REGISTRY_REPO \
+  --repository-format=docker \
+  --location=$ARTIFACT_REGISTRY_LOCATION \
+  --description="Docker repository for Restaurant Booking App"
 
 # Build and push Docker image
 echo "Building Docker image..."

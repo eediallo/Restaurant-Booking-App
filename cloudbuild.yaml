@@ -2,16 +2,33 @@
 steps:
   # Build the application
   - name: "gcr.io/cloud-builders/docker"
-    args: [
+    args:
+      [
         "build",
         "-f",
         "Dockerfile.cloudrun",
         "-t",
-        "gcr.io/$PROJECT_ID/restaurant-booking-api:$COMMIT_SHA",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/restaurant-booking/restaurant-booking-api:$COMMIT_SHA",
         "-t",
-        "gcr.io/$PROJECT_ID/restaurant-booking-api:latest",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/restaurant-booking/restaurant-booking-api:latest",
         ".",
-      ] # Deploy to Cloud Run
+      ]
+
+  # Create Artifact Registry repository if it doesn't exist
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud artifacts repositories describe restaurant-booking \
+          --location=europe-west1 \
+          --format="value(name)" || \
+        gcloud artifacts repositories create restaurant-booking \
+          --repository-format=docker \
+          --location=europe-west1 \
+          --description="Docker repository for Restaurant Booking App"
+
+  # Deploy to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args: [
@@ -19,7 +36,7 @@ steps:
         "deploy",
         "restaurant-booking-api",
         "--image",
-        "gcr.io/$PROJECT_ID/restaurant-booking-api:$COMMIT_SHA",
+        "europe-west1-docker.pkg.dev/$PROJECT_ID/restaurant-booking/restaurant-booking-api:$COMMIT_SHA",
         "--region",
         "europe-west1",
         "--platform",
@@ -41,10 +58,10 @@ steps:
         "DEBUG=false,DATABASE_URL=sqlite:///./data/restaurant_booking.db",
       ]
 
-# Store images in Google Container Registry
+# Store images in Artifact Registry
 images:
-  - "gcr.io/$PROJECT_ID/restaurant-booking-api:$COMMIT_SHA"
-  - "gcr.io/$PROJECT_ID/restaurant-booking-api:latest"
+  - "europe-west1-docker.pkg.dev/$PROJECT_ID/restaurant-booking/restaurant-booking-api:$COMMIT_SHA"
+  - "europe-west1-docker.pkg.dev/$PROJECT_ID/restaurant-booking/restaurant-booking-api:latest"
 
 # Build options
 options:

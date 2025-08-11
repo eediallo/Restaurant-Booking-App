@@ -133,7 +133,6 @@ async def serve_frontend():
 @app.get("/register", include_in_schema=False)  
 @app.get("/dashboard", include_in_schema=False)
 @app.get("/restaurants", include_in_schema=False)
-@app.get("/restaurants/{restaurant_id}", include_in_schema=False)
 @app.get("/restaurant/{restaurant_name}", include_in_schema=False)
 @app.get("/booking", include_in_schema=False)
 @app.get("/book", include_in_schema=False)

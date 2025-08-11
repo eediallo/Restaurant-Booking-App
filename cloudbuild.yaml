@@ -14,8 +14,7 @@ steps:
       ] # Deploy to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
-    args:
-      [
+    args: [
         "run",
         "deploy",
         "restaurant-booking-api",
@@ -36,6 +35,8 @@ steps:
         "0",
         "--port",
         "8080",
+        # IMPORTANT: Set SECRET_KEY environment variable after deployment for production security
+        # gcloud run services update restaurant-booking-api --region=us-central1 --set-env-vars="SECRET_KEY=your-secure-key"
         "--set-env-vars",
         "DEBUG=false,DATABASE_URL=sqlite:///./data/restaurant_booking.db",
       ]

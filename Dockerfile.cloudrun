@@ -3,7 +3,7 @@ FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app/web
 COPY web/package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY web/ ./
 RUN npm run build

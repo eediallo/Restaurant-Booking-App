@@ -133,6 +133,11 @@ async def serve_spa(full_path: str):
     Serve React Single Page Application for all non-API routes.
     This catch-all route handles client-side routing.
     """
+    # Don't serve frontend for API routes - let them return proper 404
+    if full_path.startswith("api/"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+    
     static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
     
     # Try to serve the specific file first (for assets like CSS, JS, images)

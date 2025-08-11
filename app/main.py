@@ -6,6 +6,7 @@ This server provides realistic endpoints for availability checking, booking crea
 booking management, and cancellation operations.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -19,6 +20,17 @@ import os
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Initialize database with sample data on application startup.
+    """
+    print("Starting Restaurant Booking API...")
+    init_db.init_sample_data()
+    print("Database initialized with sample data")
+    yield
+    print("Shutting down Restaurant Booking API...")
+
 app = FastAPI(
     title="Restaurant Booking Mock API",
     description=(
@@ -27,7 +39,8 @@ app = FastAPI(
     ),
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -55,17 +68,6 @@ app.include_router(user.router)
 app.include_router(restaurant.router)
 app.include_router(advanced_booking.router)
 app.include_router(reviews.router)
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    """
-    Initialize database with sample data on application startup.
-
-    This function is called once when the FastAPI application starts.
-    It ensures the database contains sample restaurant data and availability slots.
-    """
-    init_db.init_sample_data()
 
 
 @app.get("/api", summary="API Information", tags=["API Info"])
@@ -134,7 +136,7 @@ async def serve_spa(full_path: str):
     This catch-all route handles client-side routing.
     """
     # Don't serve frontend for API routes - let them return proper 404
-    if full_path.startswith("api/"):
+    if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc"):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="API endpoint not found")
     

@@ -40,8 +40,8 @@ const BookingHistory = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/user/bookings");
-      setBookings(response.data || []);
+      const response = await api.get("/api/user/bookings/history");
+      setBookings(response.data.bookings || []);
     } catch (err) {
       setError("Failed to load booking history");
       console.error("Error fetching bookings:", err);

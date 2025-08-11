@@ -25,7 +25,7 @@ class AuthService {
   }
 
   async updateProfile(profileData) {
-    const response = await api.put("/api/user/profile", profileData);
+    const response = await api.patch("/api/user/profile", profileData);
     return response.data;
   }
 
@@ -36,13 +36,6 @@ class AuthService {
     return response.data;
   }
 
-  async changePassword(currentPassword, newPassword) {
-    const response = await api.put("/api/user/password", {
-      current_password: currentPassword,
-      new_password: newPassword,
-    });
-    return response.data;
-  }
 
   // Helper method to check if user is authenticated
   isAuthenticated() {

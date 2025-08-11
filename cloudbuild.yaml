@@ -2,8 +2,7 @@
 steps:
   # Build the application
   - name: "gcr.io/cloud-builders/docker"
-    args:
-      [
+    args: [
         "build",
         "-f",
         "Dockerfile.cloudrun",
@@ -12,7 +11,7 @@ steps:
         "-t",
         "gcr.io/$PROJECT_ID/restaurant-booking-api:latest",
         ".",
-      ]  # Deploy to Cloud Run
+      ] # Deploy to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:

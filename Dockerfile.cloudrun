@@ -28,7 +28,9 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ ./app/
-COPY .env ./
+
+# Create a minimal .env file for Cloud Run (environment variables will be set by Cloud Run)
+RUN echo "# Environment variables set by Cloud Run" > .env
 
 # Copy built frontend
 COPY --from=frontend-builder /app/web/dist ./static

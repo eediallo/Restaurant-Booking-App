@@ -1,0 +1,54 @@
+# .dockerignore
+# Node modules
+node_modules/
+web/node_modules/
+web/dist/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+.venv/
+venv/
+
+# Database files (will be created at runtime)
+*.db
+*.sqlite
+*.sqlite3
+
+# Development files
+.git/
+.gitignore
+README.md
+*.md
+.env.local
+.env.development
+.env.test
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+tests/
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+logs/

@@ -1,8 +1,28 @@
 import axios from "axios";
 
+// Determine the API base URL based on environment
+const getApiBaseUrl = () => {
+  // Check if we're in production (deployed app)
+  if (
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    // We're on the deployed app, use the same origin for API calls
+    return window.location.origin;
+  }
+
+  // We're in local development
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Default fallback for local development
+  return "http://localhost:8547";
+};
+
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: "http://localhost:8547",
+  baseURL: getApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },

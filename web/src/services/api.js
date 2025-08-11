@@ -88,7 +88,9 @@ export const userAPI = {
 
   // Update user profile
   updateProfile: async (profileData) => {
-    const response = await api.patch("/api/user/profile", profileData);
+    // Filter out fields that shouldn't be updated (username, email, id)
+    const { username: _username, email: _email, id: _id, ...updateData } = profileData;
+    const response = await api.patch("/api/user/profile", updateData);
     return response.data;
   },
 

@@ -212,6 +212,84 @@ def get_restaurant_details(restaurant_id: int, db: Session = Depends(get_db)):
     return restaurant_data
 
 
+@router.get("/name/{restaurant_name}")
+def get_restaurant_details_by_name(restaurant_name: str, db: Session = Depends(get_db)):
+    """
+    Get detailed information about a specific restaurant by name.
+    """
+    restaurant = db.query(models.Restaurant).filter(
+        models.Restaurant.name == restaurant_name,
+        models.Restaurant.is_active.is_(True)
+    ).first()
+    
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    
+    # Get recent reviews
+    recent_reviews = db.query(models.RestaurantReview).filter(
+        models.RestaurantReview.restaurant_id == restaurant.id,
+        models.RestaurantReview.is_published.is_(True)
+    ).order_by(models.RestaurantReview.created_at.desc()).limit(5).all()
+    
+    # Format reviews
+    review_list = []
+    for review in recent_reviews:
+        review_data = {
+            "id": review.id,
+            "rating": review.rating,
+            "review_text": review.review_text,
+            "reviewer_name": f"{review.user.first_name} {review.user.last_name}",
+            "created_at": review.created_at.isoformat() if review.created_at else None
+        }
+        review_list.append(review_data)
+    
+    # Safely parse JSON fields
+    features = []
+    if restaurant.features:
+        try:
+            features = json.loads(restaurant.features)
+        except (json.JSONDecodeError, TypeError):
+            features = []
+    
+    dietary_options = []
+    if restaurant.dietary_options:
+        try:
+            dietary_options = json.loads(restaurant.dietary_options)
+        except (json.JSONDecodeError, TypeError):
+            dietary_options = []
+    
+    opening_hours = {}
+    if restaurant.opening_hours:
+        try:
+            opening_hours = json.loads(restaurant.opening_hours)
+        except (json.JSONDecodeError, TypeError):
+            opening_hours = {}
+
+    restaurant_data = {
+        "id": restaurant.id,
+        "name": restaurant.name,
+        "microsite_name": restaurant.microsite_name,
+        "description": restaurant.description,
+        "cuisine_type": restaurant.cuisine_type,
+        "location": restaurant.location,
+        "address": restaurant.address,
+        "phone": restaurant.phone,
+        "email": restaurant.email,
+        "website": restaurant.website,
+        "price_range": restaurant.price_range,
+        "features": features,
+        "dietary_options": dietary_options,
+        "average_rating": restaurant.average_rating,
+        "total_reviews": restaurant.total_reviews,
+        "opening_hours": opening_hours,
+        "max_party_size": restaurant.max_party_size,
+        "accepts_reservations": restaurant.accepts_reservations,
+        "recent_reviews": review_list
+    }
+    
+    return restaurant_data
+
+
 @router.get("/search/cuisines")
 def get_available_cuisines(db: Session = Depends(get_db)):
     """

@@ -36,7 +36,6 @@ class AuthService {
     return response.data;
   }
 
-
   // Helper method to check if user is authenticated
   isAuthenticated() {
     const token = localStorage.getItem("accessToken");

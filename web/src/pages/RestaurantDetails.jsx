@@ -14,30 +14,12 @@ const RestaurantDetails = () => {
     try {
       setLoading(true);
 
-      // First, search for the restaurant by exact name to get its ID
-      const searchResponse = await api.get(
-        `/api/restaurants?search=${encodeURIComponent(
-          restaurantName
-        )}&limit=100`
-      );
-      const restaurants =
-        searchResponse.data.restaurants || searchResponse.data;
-
-      // Find exact match by name
-      const targetRestaurant = restaurants.find(
-        (r) => r.name === restaurantName
+      // Get restaurant details directly by name using the new API endpoint
+      const response = await api.get(
+        `/api/restaurants/name/${encodeURIComponent(restaurantName)}`
       );
 
-      if (!targetRestaurant) {
-        setError("Restaurant not found");
-        return;
-      }
-
-      // Now get detailed information using the restaurant ID
-      const detailResponse = await api.get(
-        `/api/restaurants/${targetRestaurant.id}`
-      );
-      setRestaurant(detailResponse.data);
+      setRestaurant(response.data);
     } catch (err) {
       setError("Failed to load restaurant details");
       console.error("Error fetching restaurant details:", err);

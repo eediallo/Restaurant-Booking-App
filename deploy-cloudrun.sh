@@ -1,18 +1,22 @@
 #!/bin/bash
 
 # Deployment script for Google Cloud Run
+# Usage: ./deploy-cloudrun.sh [PROJECT_ID] [IMAGE_TAG]
+# Example: ./deploy-cloudrun.sh my-project-id v1.0.0
 set -e
 
 # Configuration
 PROJECT_ID=${1:-"restaurant-booking-468706"}
 SERVICE_NAME="restaurant-booking-api"
 REGION="europe-west1"
-IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME"
+IMAGE_TAG=${2:-"latest"}
+IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME:$IMAGE_TAG"
 
 echo "Deploying Restaurant Booking App to Google Cloud Run"
 echo "Project ID: $PROJECT_ID"
 echo "Service Name: $SERVICE_NAME"
 echo "Region: $REGION"
+echo "Image Tag: $IMAGE_TAG"
 
 # Build and push Docker image
 echo "Building Docker image..."

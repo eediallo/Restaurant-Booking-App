@@ -21,7 +21,7 @@ steps:
         "--image",
         "gcr.io/$PROJECT_ID/restaurant-booking-api:$COMMIT_SHA",
         "--region",
-        "us-central1",
+        "europe-west1",
         "--platform",
         "managed",
         "--allow-unauthenticated",
@@ -36,7 +36,7 @@ steps:
         "--port",
         "8080",
         # IMPORTANT: Set SECRET_KEY environment variable after deployment for production security
-        # gcloud run services update restaurant-booking-api --region=us-central1 --set-env-vars="SECRET_KEY=your-secure-key"
+        # gcloud run services update restaurant-booking-api --region=europe-west1 --set-env-vars="SECRET_KEY=your-secure-key"
         "--set-env-vars",
         "DEBUG=false,DATABASE_URL=sqlite:///./data/restaurant_booking.db",
       ]

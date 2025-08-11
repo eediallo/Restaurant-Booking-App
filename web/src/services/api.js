@@ -64,11 +64,16 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return api(originalRequest);
         }
-      } catch {
-        // Refresh failed, redirect to login
+      } catch (refreshError) {
+        // Only clear tokens and redirect if refresh specifically failed
+        console.error("Token refresh failed:", refreshError);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        
+        // Only redirect if we're not already on login page
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
     }
 

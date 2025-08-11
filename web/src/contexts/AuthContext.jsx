@@ -23,15 +23,17 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        if (token) {
+        if (token && authService.isAuthenticated()) {
           const userData = await authService.getCurrentUser();
           setUser(userData);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
-        // Clear invalid token
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        // Only clear tokens if it's an authentication error (401)
+        if (error.response?.status === 401) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+        }
       } finally {
         setLoading(false);
       }
@@ -51,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("accessToken", response.access_token);
       localStorage.setItem("refreshToken", response.refresh_token);
 
-      // Set user data
+      // Set user data immediately from login response
       setUser(response.user_info);
 
       return response;

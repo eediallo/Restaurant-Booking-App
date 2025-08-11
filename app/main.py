@@ -128,29 +128,45 @@ async def serve_frontend():
         return {"message": "Frontend not available", "static_dir": static_dir}
 
 
-# Serve React app for all other non-API routes (this should be last)
-@app.get("/{full_path:path}", include_in_schema=False)
-async def serve_spa(full_path: str):
-    """
-    Serve React Single Page Application for all non-API routes.
-    This catch-all route handles client-side routing.
-    """
-    # Don't serve frontend for API routes - let them return proper 404
-    if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc"):
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="API endpoint not found")
-    
+# Serve React app for specific frontend routes
+@app.get("/login", include_in_schema=False)
+@app.get("/register", include_in_schema=False)  
+@app.get("/dashboard", include_in_schema=False)
+@app.get("/restaurants", include_in_schema=False)
+@app.get("/restaurants/{restaurant_id}", include_in_schema=False)
+@app.get("/booking", include_in_schema=False)
+@app.get("/booking/{booking_id}", include_in_schema=False)
+@app.get("/profile", include_in_schema=False)
+@app.get("/search", include_in_schema=False)
+@app.get("/history", include_in_schema=False)
+async def serve_frontend_routes():
+    """Serve the React frontend for specific frontend routes."""
     static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
-    
-    # Try to serve the specific file first (for assets like CSS, JS, images)
-    if full_path and full_path != "":
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return FileResponse(file_path)
-    
-    # Default to index.html for SPA routing
     index_path = os.path.join(static_dir, "index.html")
+    
     if os.path.exists(index_path):
         return FileResponse(index_path)
     else:
-        return {"message": "Frontend not available", "static_dir": static_dir, "index_exists": os.path.exists(index_path)}
+        return {"message": "Frontend not available", "static_dir": static_dir}
+
+# Serve static assets
+@app.get("/assets/{file_path:path}", include_in_schema=False)
+@app.get("/vite.svg", include_in_schema=False)
+async def serve_static_assets(file_path: str = ""):
+    """Serve static assets like CSS, JS, images."""
+    static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+    
+    if file_path:
+        # For /assets/... requests
+        asset_path = os.path.join(static_dir, "assets", file_path)
+        if os.path.exists(asset_path) and os.path.isfile(asset_path):
+            return FileResponse(asset_path)
+    else:
+        # For direct file requests like /vite.svg
+        file_path = os.path.join(static_dir, "vite.svg")
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+    
+    # File not found
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail="File not found")

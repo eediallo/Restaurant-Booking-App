@@ -21,8 +21,19 @@ echo "Region: $REGION"
 echo "Image Tag: $IMAGE_TAG"
 echo "Image URL: $IMAGE_NAME"
 
+# Ensure we're using the correct Google Cloud project
+echo "Setting Google Cloud project to: $PROJECT_ID"
+gcloud config set project $PROJECT_ID
+
 # Configure Docker for Artifact Registry
 echo "Configuring Docker for Artifact Registry..."
+
+# Temporarily fix Docker credential issues if they exist
+if grep -q '"credsStore": "desktop"' ~/.docker/config.json 2>/dev/null; then
+    echo "Temporarily fixing Docker credential configuration..."
+    sed -i.bak 's/"credsStore": "desktop",/"credStore": "",/' ~/.docker/config.json
+fi
+
 gcloud auth configure-docker $ARTIFACT_REGISTRY_LOCATION-docker.pkg.dev
 
 # Create Artifact Registry repository if it doesn't exist

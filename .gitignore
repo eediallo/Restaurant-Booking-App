@@ -6,4 +6,5 @@ GEMINI.md
 .env.local
 .env.production
 prompts
+de
 test.db

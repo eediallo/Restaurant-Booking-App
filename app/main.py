@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from app.routers import availability, booking, auth, user, restaurant, advanced_booking, reviews
 from app.database import engine
 from app.models import Base
@@ -114,6 +114,67 @@ async def api_info() -> dict:
 async def health_check():
     """Health check endpoint for deployment platforms."""
     return {"status": "healthy", "message": "Restaurant Booking API is running"}
+
+
+# Simple booking cancellation endpoint for easier access
+@app.get("/booking/{booking_reference}/cancel")
+async def simple_cancel_booking_page(booking_reference: str):
+    """
+    Simple booking cancellation page endpoint.
+    Returns a cancellation form or redirects to the proper API endpoint.
+    """
+    from fastapi import Request
+    from fastapi.responses import HTMLResponse
+    
+    # For now, return a simple HTML form for cancellation
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Cancel Booking - {booking_reference}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+            .form-group {{ margin-bottom: 15px; }}
+            label {{ display: block; margin-bottom: 5px; font-weight: bold; }}
+            select, button {{ width: 100%; padding: 10px; margin-bottom: 10px; }}
+            button {{ background-color: #dc3545; color: white; border: none; cursor: pointer; }}
+            button:hover {{ background-color: #c82333; }}
+            .info {{ background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-bottom: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="info">
+            <h2>Cancel Booking: {booking_reference}</h2>
+            <p>To cancel this booking, please use the API endpoint:</p>
+            <p><strong>POST</strong> /api/ConsumerApi/v1/Restaurant/{{restaurant_name}}/Booking/{booking_reference}/Cancel</p>
+        </div>
+        
+        <form action="/api/ConsumerApi/v1/Restaurant/demo-restaurant/Booking/{booking_reference}/Cancel" method="post">
+            <div class="form-group">
+                <label for="cancellationReasonId">Cancellation Reason:</label>
+                <select name="cancellationReasonId" id="cancellationReasonId" required>
+                    <option value="1">Change of plans</option>
+                    <option value="2">Emergency</option>
+                    <option value="3">Schedule conflict</option>
+                    <option value="4">Other</option>
+                </select>
+            </div>
+            
+            <button type="submit">Cancel Booking</button>
+        </form>
+        
+        <hr style="margin: 30px 0;">
+        
+        <h3>Available API Endpoints:</h3>
+        <ul>
+            <li><a href="/docs">API Documentation</a></li>
+            <li><a href="/api">API Information</a></li>
+        </ul>
+    </body>
+    </html>
+    """
+    
+    return HTMLResponse(content=html_content)
 
 
 @app.get("/", include_in_schema=False)

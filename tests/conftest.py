@@ -124,7 +124,7 @@ def auth_headers(client):
     
     # Login to get token
     login_response = client.post("/api/auth/login", data={
-        "username": "testuser",
+        "username": "test@example.com",
         "password": "testpassword123"
     })
     
@@ -259,7 +259,7 @@ def auth_headers(client, test_user):
     response = client.post(
         "/api/auth/login",
         data={
-            "username": test_user.username,
+            "username": test_user.email,
             "password": "testpassword123"
         }
     )

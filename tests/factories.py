@@ -20,7 +20,7 @@ class UserFactory(SQLAlchemyModelFactory):
     
     username = factory.Sequence(lambda n: f"testuser{n}")
     email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
-    password_hash = factory.LazyFunction(lambda: pwd_context.hash("testpassword123"))
+    password_hash = factory.LazyFunction(lambda: pwd_context.hash("testpass123"))
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     phone = factory.Faker("phone_number")

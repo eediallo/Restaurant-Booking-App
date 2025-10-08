@@ -9,7 +9,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use a simple bcrypt configuration to avoid CI issues
+# The key is to use minimal settings and let bcrypt work with defaults
+pwd_context = CryptContext(
+    schemes=["bcrypt"], 
+    deprecated="auto"
+)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -20,8 +25,26 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """Hash a password for storing."""
     # Truncate password to 72 bytes as required by bcrypt
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    # This is necessary because bcrypt has a hard limit of 72 bytes
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        # Truncate to 72 bytes and decode safely
+        password_bytes = password_bytes[:72]
+        # Ensure we don't cut in the middle of a multi-byte character
+        try:
+            password = password_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            # If truncation cuts a multi-byte character, trim further
+            for i in range(4):  # UTF-8 chars are max 4 bytes
+                try:
+                    password = password_bytes[:72-i].decode('utf-8')
+                    break
+                except UnicodeDecodeError:
+                    continue
+            else:
+                # Fallback: use only ASCII part
+                password = password_bytes[:72].decode('utf-8', errors='ignore')
+    
     return pwd_context.hash(password)
 
 

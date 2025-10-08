@@ -5,7 +5,6 @@ This module handles database table creation and population with sample data
 for the restaurant booking mock API. It sets up realistic test data including
 restaurants, availability slots, and cancellation reasons.
 
-Author: AI Assistant
 """
 
 import random

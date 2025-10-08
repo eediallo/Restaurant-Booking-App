@@ -4,7 +4,6 @@ Booking Router for Restaurant Booking API.
 This module handles all booking-related operations including creation,
 retrieval, updates, and cancellation of restaurant bookings.
 
-Author: AI Assistant
 """
 
 import random

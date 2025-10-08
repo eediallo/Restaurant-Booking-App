@@ -4,7 +4,6 @@ Availability Router for Restaurant Booking API.
 This module handles restaurant availability searching functionality,
 including time slot availability checks and booking constraint validation.
 
-Author: AI Assistant
 """
 
 from datetime import date

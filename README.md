@@ -27,7 +27,7 @@ A modern, full-stack restaurant booking application built with **FastAPI** (back
 ### Backend (FastAPI)
 
 - **Framework**: FastAPI with async/await support
-- **Database**: SQLite with SQLAlchemy ORM
+- **Database**: Neon(postgres)
 - **Authentication**: JWT tokens with refresh mechanism
 - **API Documentation**: Auto-generated OpenAPI/Swagger docs
 - **Testing**: Comprehensive test suite with pytest

@@ -5,7 +5,6 @@ This module sets up the database connection, session management,
 and declarative base for the restaurant booking API.
 Supports both SQLite (development) and PostgreSQL (production).
 
-Author: AI Assistant
 """
 
 from typing import Generator

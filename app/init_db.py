@@ -34,7 +34,7 @@ def init_sample_data() -> None:
 
     Sample data includes:
     - 5 diverse restaurants with different cuisines and features
-    - 30 days of availability slots for each restaurant
+    - 365 days of availability slots for each restaurant (1 year)
     - 5 predefined cancellation reasons
     - Sample reviews for restaurants
 
@@ -164,7 +164,7 @@ def init_sample_data() -> None:
                 sample_times = [time(12, 0), time(12, 30), time(13, 0), time(13, 30), time(19, 0), time(19, 30), time(20, 0), time(20, 30)]
 
             start_date = datetime.now().date()
-            for i in range(30):  # Next 30 days
+            for i in range(365):  # Next 365 days (1 year)
                 current_date = start_date + timedelta(days=i)
                 for slot_time in sample_times:
                     # Randomly make some slots unavailable (higher availability for new restaurants)

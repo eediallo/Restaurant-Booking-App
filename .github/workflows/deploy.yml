@@ -50,7 +50,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/postgress'
 
     steps:
       - uses: actions/checkout@v4
@@ -91,9 +91,10 @@ jobs:
             --platform managed \
             --region $REGION \
             --allow-unauthenticated \
-            --memory 512Mi \
+            --memory 1Gi \
             --cpu 1 \
             --max-instances 10 \
             --min-instances 0 \
             --port 8080 \
-            --set-env-vars "DEBUG=false,DATABASE_URL=sqlite:///./data/restaurant_booking.db"
+            --timeout 300 \
+            --set-env-vars "ENVIRONMENT=production,DEBUG=false,PORT=8080,SECRET_KEY=${{ secrets.SECRET_KEY }},NEON_DATABASE_URL=${{ secrets.NEON_DATABASE_URL }}"

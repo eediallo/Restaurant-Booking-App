@@ -97,4 +97,4 @@ jobs:
             --min-instances 0 \
             --port 8080 \
             --timeout 300 \
-            --set-env-vars "ENVIRONMENT=production,DEBUG=false,PORT=8080,SECRET_KEY=${{ secrets.SECRET_KEY }},NEON_DATABASE_URL=${{ secrets.NEON_DATABASE_URL }}"
+            --set-env-vars "ENVIRONMENT=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},NEON_DATABASE_URL=${{ secrets.NEON_DATABASE_URL }}"

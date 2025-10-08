@@ -1,9 +1,9 @@
 venv
 __pycache__/
-restaurant_booking.db
 GEMINI.md
 .env
 *.env
 .env.local
 .env.production
 prompts
+test.db

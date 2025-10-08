@@ -26,8 +26,15 @@ async def lifespan(app: FastAPI):
     Initialize database with sample data on application startup.
     """
     print("Starting Restaurant Booking API...")
-    init_db.init_sample_data()
-    print("Database initialized with sample data")
+    
+    # Only initialize sample data in development
+    environment = os.getenv("ENVIRONMENT", "development")
+    if environment == "development":
+        init_db.init_sample_data()
+        print("Database initialized with sample data")
+    else:
+        print("Production mode: Skipping sample data initialization")
+    
     yield
     print("Shutting down Restaurant Booking API...")
 

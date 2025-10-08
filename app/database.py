@@ -15,8 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-# Get database URL from environment variable, fallback to SQLite for development
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./restaurant_booking.db")
+# Import the processed DATABASE_URL from config.py which handles Neon database logic
+from app.config import DATABASE_URL
 
 # Determine if we're using PostgreSQL or SQLite
 is_postgresql = DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://")

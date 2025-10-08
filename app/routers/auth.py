@@ -3,7 +3,6 @@ Authentication router for user registration, login, and token management.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
@@ -22,7 +21,7 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    username: str  # This will be treated as email
+    username: str  # This should be the email address
     password: str
 
 
@@ -78,10 +77,11 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """Authenticate user and return access token."""
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
-    if not user or not auth.verify_password(form_data.password, user.password_hash):
+def login_for_access_token(user_data: UserLogin, db: Session = Depends(get_db)):
+    """Authenticate user with JSON data and return access token."""
+    # Use email field for authentication (username field contains email)
+    user = db.query(models.User).filter(models.User.email == user_data.username).first()
+    if not user or not auth.verify_password(user_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -102,7 +102,14 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "user_info": {"username": user.username, "email": user.email},
+        "user_info": {
+            "username": user.username, 
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": user.phone,
+            "id": user.id
+        },
     }
 
 

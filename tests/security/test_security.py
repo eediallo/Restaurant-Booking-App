@@ -47,7 +47,7 @@ class TestAuthenticationSecurity:
         
         client.post("/api/auth/register", json=user_data)
         
-        login_response = client.post("/api/auth/login", data={
+        login_response = client.post("/api/auth/login", json={
             "username": "jwt@example.com",
             "password": "testpassword123"
         })
@@ -109,7 +109,7 @@ class TestAuthenticationSecurity:
         # Attempt multiple failed logins
         failed_attempts = 0
         for i in range(10):
-            response = client.post("/api/auth/login", data={
+            response = client.post("/api/auth/login", json={
                 "username": "brute@example.com",
                 "password": f"wrongpassword{i}"
             })
@@ -152,7 +152,7 @@ class TestAuthorizationSecurity:
         client.post("/api/auth/register", json=user2_data)
         
         # Login as user1
-        login1_response = client.post("/api/auth/login", data={
+        login1_response = client.post("/api/auth/login", json={
             "username": "user1@example.com",
             "password": "testpassword123"
         })
@@ -161,7 +161,7 @@ class TestAuthorizationSecurity:
         auth_headers1 = {"Authorization": f"Bearer {token1}"}
         
         # Login as user2
-        login2_response = client.post("/api/auth/login", data={
+        login2_response = client.post("/api/auth/login", json={
             "username": "user2@example.com",
             "password": "testpassword123"
         })
@@ -223,7 +223,7 @@ class TestInputValidationSecurity:
         }
         
         client.post("/api/auth/register", json=user_data)
-        login_response = client.post("/api/auth/login", data={
+        login_response = client.post("/api/auth/login", json={
             "username": "sql@example.com",
             "password": "testpassword123"
         })
@@ -352,7 +352,7 @@ class TestDataProtection:
         assert "password_hash" not in data
         
         # Login and check profile endpoint
-        login_response = client.post("/api/auth/login", data={
+        login_response = client.post("/api/auth/login", json={
             "username": "privacy123@example.com",
             "password": "secretpassword123"
         })

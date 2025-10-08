@@ -24,6 +24,18 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 # Database Configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./restaurant_booking.db")
 
+# For Neon PostgreSQL, use NEON_DATABASE_URL if available
+NEON_DATABASE_URL = os.getenv("NEON_DATABASE_URL")
+if NEON_DATABASE_URL:
+    DATABASE_URL = NEON_DATABASE_URL
+    print("Using Neon PostgreSQL database")
+elif DATABASE_URL.startswith(("postgresql://", "postgres://")):
+    print("Using PostgreSQL database")
+else:
+    print("Using SQLite database")
+
+print(f"Database URL configured: {DATABASE_URL.split('@')[0] if '@' in DATABASE_URL else 'SQLite'}***")
+
 # Server Configuration
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))

@@ -1,26 +1,44 @@
 """
 Database Configuration and Session Management.
 
-This module sets up the SQLite database connection, session management,
-and declarative base for the restaurant booking mock API.
+This module sets up the database connection, session management,
+and declarative base for the restaurant booking API.
+Supports both SQLite (development) and PostgreSQL (production).
 
 Author: AI Assistant
 """
 
 from typing import Generator
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-# SQLite database URL - creates file in project root
-SQLALCHEMY_DATABASE_URL = "sqlite:///./restaurant_booking.db"
+# Get database URL from environment variable, fallback to SQLite for development
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./restaurant_booking.db")
 
-# Create SQLAlchemy engine with SQLite-specific configuration
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}  # Required for SQLite threading
-)
+# Determine if we're using PostgreSQL or SQLite
+is_postgresql = DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://")
+
+# Create SQLAlchemy engine with appropriate configuration
+if is_postgresql:
+    # PostgreSQL configuration
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,  # Verify connections before use
+        pool_recycle=300,    # Recycle connections every 5 minutes
+        echo=False           # Set to True for SQL query logging
+    )
+    print("Using PostgreSQL database")
+else:
+    # SQLite configuration  
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},  # Required for SQLite threading
+        echo=False           # Set to True for SQL query logging
+    )
+    print("Using SQLite database")
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

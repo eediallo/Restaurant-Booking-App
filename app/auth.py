@@ -4,6 +4,14 @@ Authentication utilities for password hashing and JWT token management.
 
 from datetime import datetime, timedelta
 from typing import Optional
+import bcrypt
+
+# Monkey patch bcrypt to work with passlib
+# See: https://github.com/pyca/bcrypt/issues/684
+try:
+    bcrypt.__about__ = type('about', (object,), {'__version__': bcrypt.__version__})
+except AttributeError:
+    pass
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext

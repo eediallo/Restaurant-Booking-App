@@ -46,6 +46,15 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+    
+    # Check if username is already taken
+    db_user_by_username = db.query(models.User).filter(models.User.username == user_data.username).first()
+    if db_user_by_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken",
+        )
+
     hashed_password = auth.get_password_hash(user_data.password)
     new_user = models.User(
         username=user_data.username, 

@@ -67,3 +67,33 @@
     font-size: 0.8125rem;
   }
 }
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .input {
+  padding-right: 4.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #8b1538;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid #8b1538;
+  outline-offset: 2px;
+}

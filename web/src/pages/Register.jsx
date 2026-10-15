@@ -203,6 +203,7 @@ const Register = () => {
 
           <Input
             type="password"
+            showPasswordToggle
             name="password"
             label="Password"
             value={formData.password}
@@ -215,6 +216,7 @@ const Register = () => {
 
           <Input
             type="password"
+            showPasswordToggle
             name="confirmPassword"
             label="Confirm Password"
             value={formData.confirmPassword}

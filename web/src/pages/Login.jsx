@@ -112,6 +112,7 @@ const Login = () => {
 
           <Input
             type="password"
+            showPasswordToggle
             name="password"
             label="Password"
             value={formData.password}

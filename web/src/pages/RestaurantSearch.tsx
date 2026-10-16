@@ -29,7 +29,7 @@ const RestaurantSearch = () => {
       setLoading(true);
 
       // Build params object, only include non-empty values
-      const params = {
+      const params: Record<string, string | number> = {
         limit: 50,
       };
 

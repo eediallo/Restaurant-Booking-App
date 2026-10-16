@@ -3,19 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import BookingCard from "../components/BookingCard";
+import type { BookingCardData } from "../components/BookingCard";
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [userBookings, setUserBookings] = useState([]);
-  const [filteredBookings, setFilteredBookings] = useState([]);
+  const [userBookings, setUserBookings] = useState<BookingCardData[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<BookingCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
+  const [selectedBooking, setSelectedBooking] = useState<BookingCardData | null>(null);
+  const [editFormData, setEditFormData] = useState<{ visitDate: string; visitTime: string; partySize: number; specialRequests: string }>({ visitDate: "", visitTime: "", partySize: 2, specialRequests: "" });
   const [cancellationReasons, setCancellationReasons] = useState([]);
 
   // New filtering state
@@ -84,19 +85,19 @@ const Dashboard = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "date-asc":
-          return new Date(a.visit_date) - new Date(b.visit_date);
+          return new Date(a.visit_date).getTime() - new Date(b.visit_date).getTime();
         case "date-desc":
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
         case "created-asc":
-          return new Date(a.created_at) - new Date(b.created_at);
+          return new Date((a as any).created_at).getTime() - new Date((b as any).created_at).getTime();
         case "created-desc":
-          return new Date(b.created_at) - new Date(a.created_at);
+          return new Date((b as any).created_at).getTime() - new Date((a as any).created_at).getTime();
         case "party-size-asc":
           return a.party_size - b.party_size;
         case "party-size-desc":
           return b.party_size - a.party_size;
         default:
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
       }
     });
 
@@ -153,7 +154,7 @@ const Dashboard = () => {
       const formData = new FormData();
       formData.append("VisitDate", editFormData.visitDate);
       formData.append("VisitTime", editFormData.visitTime);
-      formData.append("PartySize", editFormData.partySize);
+      formData.append("PartySize", String(editFormData.partySize));
       formData.append("SpecialRequests", editFormData.specialRequests);
 
       await api.patch(
@@ -478,7 +479,7 @@ const Dashboard = () => {
                     })
                   }
                   placeholder="Any special requirements..."
-                  rows="3"
+                  rows={3}
                 />
               </div>
 

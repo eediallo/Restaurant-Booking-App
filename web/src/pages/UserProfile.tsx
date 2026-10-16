@@ -342,7 +342,7 @@ const UserProfile = () => {
                       handleInputChange("accessibility_needs", e.target.value)
                     }
                     placeholder="Please describe any accessibility requirements..."
-                    rows="3"
+                    rows={3}
                   />
                 </div>
               </div>

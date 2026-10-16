@@ -77,7 +77,7 @@ const BookingSearch = () => {
     try {
       const formData = new FormData();
       formData.append("VisitDate", searchParams.visitDate);
-      formData.append("PartySize", searchParams.partySize);
+      formData.append("PartySize", String(searchParams.partySize));
       formData.append("ChannelCode", searchParams.channelCode);
 
       // Find the selected restaurant to get its name

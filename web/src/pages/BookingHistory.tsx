@@ -96,15 +96,15 @@ const BookingHistory = () => {
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case "date_asc":
-          return new Date(a.visit_date) - new Date(b.visit_date);
+          return new Date(a.visit_date).getTime() - new Date(b.visit_date).getTime();
         case "date_desc":
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
         case "restaurant":
           return a.restaurant_name.localeCompare(b.restaurant_name);
         case "status":
           return a.status.localeCompare(b.status);
         default:
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
       }
     });
 

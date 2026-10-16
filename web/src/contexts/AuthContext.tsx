@@ -1,8 +1,32 @@
 import React, { useEffect, useState, useContext, createContext } from "react";
+import type { ReactNode } from "react";
 import { authService } from "../services/auth";
 
+export interface AuthUser {
+  id?: string | number;
+  username?: string;
+  email?: string;
+  first_name?: string;
+  [key: string]: any;
+}
+
+interface AuthContextValue {
+  user: AuthUser | null;
+  loading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<any>;
+  register: (userData: Record<string, unknown>) => Promise<any>;
+  logout: () => Promise<void>;
+  updateProfile: (profileData: Record<string, unknown>) => Promise<AuthUser>;
+  refreshToken: () => Promise<string>;
+  isAuthenticated: () => boolean;
+  clearError: () => void;
+}
+
+interface AuthProviderProps { children: ReactNode }
+
 // Create the AuthContext
-const AuthContext = createContext(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 // Custom hook to use the AuthContext
 export const useAuth = () => {
@@ -13,10 +37,10 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Check for existing token on app start
   useEffect(() => {
@@ -42,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -65,7 +89,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData: Record<string, unknown>) => {
     try {
       setLoading(true);
       setError(null);
@@ -101,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateProfile = async (profileData) => {
+  const updateProfile = async (profileData: Record<string, unknown>) => {
     try {
       setLoading(true);
       setError(null);

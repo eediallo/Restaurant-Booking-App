@@ -101,10 +101,10 @@ const BookingForm = () => {
       // Booking details
       formData.append("VisitDate", bookingData.visitDate);
       formData.append("VisitTime", bookingData.visitTime);
-      formData.append("PartySize", bookingData.partySize);
+      formData.append("PartySize", String(bookingData.partySize));
       formData.append("ChannelCode", bookingData.channelCode);
       formData.append("SpecialRequests", bookingData.specialRequests);
-      formData.append("IsLeaveTimeConfirmed", bookingData.isLeaveTimeConfirmed);
+      formData.append("IsLeaveTimeConfirmed", String(bookingData.isLeaveTimeConfirmed));
 
       // Customer details
       formData.append("Customer[Title]", bookingData.title);
@@ -270,7 +270,7 @@ const BookingForm = () => {
                 value={bookingData.specialRequests}
                 onChange={handleInputChange}
                 placeholder="Any dietary requirements, special occasions, or other requests..."
-                rows="3"
+                rows={3}
               />
             </div>
           </div>

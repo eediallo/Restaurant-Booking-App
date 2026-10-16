@@ -212,7 +212,7 @@ const RestaurantDetails = () => {
           <div className="hours-section">
             <h2>Opening Hours</h2>
             <div className="hours-grid">
-              {formatOpeningHours(restaurant.opening_hours).map(
+              {(formatOpeningHours(restaurant.opening_hours) as { day: string; hours: string }[]).map(
                 ({ day, hours }) => (
                   <div key={day} className="hours-item">
                     <span className="day">{day}</span>

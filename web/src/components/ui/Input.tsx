@@ -1,5 +1,18 @@
-import React ,{useState} from "react";
+import React, { useState } from "react";
+import type { ChangeEventHandler, FocusEventHandler, InputHTMLAttributes } from "react";
 import "./Input.css";
+
+export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "onBlur" | "type"> {
+  type?: string;
+  label?: string;
+  name: string;
+  value: string | number;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  onBlur?: FocusEventHandler<HTMLInputElement>;
+  placeholder?: string;
+  error?: string;
+  showPasswordToggle?: boolean;
+}
 
 const Input = ({
   type = "text",
@@ -15,9 +28,9 @@ const Input = ({
   className = "",
   showPasswordToggle = false,
   ...props
-}) => {
-  const[passwordVisible,setPasswordVisible] = useState(false);
-  const isPasswordField = type=="password";
+}: InputProps) => {
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const isPasswordField = type === "password";
   const inputType = isPasswordField && showPasswordToggle && passwordVisible ? "text" : type;
   const inputClasses = `input ${error ? "input-error" : ""} ${className}`;
 
@@ -50,7 +63,7 @@ const Input = ({
             <button
               type="button"
               className="password-toggle"
-              onClick={()=> setPasswordVisible((visible)=>!visible)}
+              onClick={() => setPasswordVisible((visible) => !visible)}
               disabled={disabled}
               aria-label={passwordVisible ? "Hide password" : "Show password"}
               aria-pressed={passwordVisible}

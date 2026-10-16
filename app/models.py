@@ -12,7 +12,7 @@ from datetime import datetime, date
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Column, Integer, String, DateTime, Boolean, Date, Time, Text, ForeignKey
+    Column, Integer, String, DateTime, Boolean, Date, Time, Text, ForeignKey, Index
 )
 from sqlalchemy.orm import relationship
 
@@ -59,6 +59,7 @@ class User(Base):
     preferences = relationship("UserPreference", back_populates="user")
     customer = relationship("Customer", uselist=False, back_populates="user")
     reviews = relationship("RestaurantReview", back_populates="user")
+    waitlist_entries = relationship("WaitlistEntry", back_populates="user")
 
 
 class UserPreference(Base):
@@ -125,6 +126,7 @@ class Restaurant(Base):
     bookings = relationship("Booking", back_populates="restaurant")
     availability_slots = relationship("AvailabilitySlot", back_populates="restaurant")
     reviews = relationship("RestaurantReview", back_populates="restaurant")
+    waitlist_entries = relationship("WaitlistEntry", back_populates="restaurant")
 
 
 class Customer(Base):
@@ -204,6 +206,32 @@ class AvailabilitySlot(Base):
 
     # Relationships
     restaurant = relationship("Restaurant", back_populates="availability_slots")
+
+
+class WaitlistEntry(Base):
+    """A user's request to be notified about a full restaurant time slot."""
+    __tablename__ = "waitlist_entries"
+    __table_args__ = (
+        Index(
+            "ix_waitlist_slot_status",
+            "restaurant_id",
+            "visit_date",
+            "visit_time",
+            "status",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False, index=True)
+    visit_date = Column(Date, nullable=False)
+    visit_time = Column(Time, nullable=False)
+    party_size = Column(Integer, nullable=False)
+    status = Column(String(20), nullable=False, default="waiting")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="waitlist_entries")
+    restaurant = relationship("Restaurant", back_populates="waitlist_entries")
 
 
 class CancellationReason(Base):

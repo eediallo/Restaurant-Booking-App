@@ -6,7 +6,15 @@ import Input from "../components/ui/Input";
 import "./Register.css";
 
 const Register = () => {
-  const [formData, setFormData] = useState<{ firstName: string; lastName: string; email: string; username: string; phone: string; password: string; confirmPassword: string }>({
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+  }>({
     firstName: "",
     lastName: "",
     email: "",
@@ -81,7 +89,7 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -97,7 +105,7 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {

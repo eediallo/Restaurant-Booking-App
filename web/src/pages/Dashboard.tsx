@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import BookingCard from "../components/BookingCard";
 import type { BookingCardData } from "../components/BookingCard";
+import type { CancellationReason } from "../types";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -17,7 +18,7 @@ const Dashboard = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingCardData | null>(null);
   const [editFormData, setEditFormData] = useState<{ visitDate: string; visitTime: string; partySize: number; specialRequests: string }>({ visitDate: "", visitTime: "", partySize: 2, specialRequests: "" });
-  const [cancellationReasons, setCancellationReasons] = useState([]);
+  const [cancellationReasons, setCancellationReasons] = useState<CancellationReason[]>([]);
 
   // New filtering state
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,8 +31,8 @@ const Dashboard = () => {
     fetchCancellationReasons();
 
     // Listen for cancel booking events from BookingCard component
-    const handleCancelBookingEvent = (event) => {
-      handleCancelBooking(event.detail);
+    const handleCancelBookingEvent = (event: Event) => {
+      handleCancelBooking((event as CustomEvent<BookingCardData>).detail);
     };
 
     document.addEventListener("cancelBooking", handleCancelBookingEvent);
@@ -132,7 +133,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleEditBooking = (booking) => {
+  const handleEditBooking = (booking: BookingCardData) => {
     setSelectedBooking(booking);
     setEditFormData({
       visitDate: booking.visit_date,
@@ -143,13 +144,14 @@ const Dashboard = () => {
     setShowEditModal(true);
   };
 
-  const handleCancelBooking = (booking) => {
+  const handleCancelBooking = (booking: BookingCardData) => {
     setSelectedBooking(booking);
     setShowCancelModal(true);
   };
 
-  const submitEditBooking = async (e) => {
+  const submitEditBooking = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!selectedBooking) return;
     try {
       const formData = new FormData();
       formData.append("VisitDate", editFormData.visitDate);
@@ -180,7 +182,8 @@ const Dashboard = () => {
     }
   };
 
-  const submitCancelBooking = async (cancellationReasonId) => {
+  const submitCancelBooking = async (cancellationReasonId: string) => {
+    if (!selectedBooking) return;
     try {
       const formData = new FormData();
       formData.append("cancellationReasonId", cancellationReasonId);
@@ -208,7 +211,7 @@ const Dashboard = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -217,7 +220,7 @@ const Dashboard = () => {
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -546,7 +549,7 @@ const Dashboard = () => {
                   id="cancellationReason"
                   onChange={(e) => {
                     if (e.target.value) {
-                      submitCancelBooking(parseInt(e.target.value));
+                      submitCancelBooking(e.target.value);
                     }
                   }}
                   defaultValue=""

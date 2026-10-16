@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import type { Restaurant } from "../types";
 import "./RestaurantDetails.css";
 
 const RestaurantDetails = () => {
   const { restaurantName } = useParams(); // Use restaurantName to match the route parameter
   const navigate = useNavigate();
-  const [restaurant, setRestaurant] = useState(null);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -16,7 +17,7 @@ const RestaurantDetails = () => {
 
       // Get restaurant details directly by name using the new API endpoint
       const response = await api.get(
-        `/api/restaurants/name/${encodeURIComponent(restaurantName)}`
+        `/api/restaurants/name/${encodeURIComponent(restaurantName || "")}`
       );
 
       setRestaurant(response.data);
@@ -32,11 +33,11 @@ const RestaurantDetails = () => {
     fetchRestaurantDetails();
   }, [fetchRestaurantDetails]);
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     return "★".repeat(rating) + "☆".repeat(5 - rating);
   };
 
-  const formatOpeningHours = (openingHours) => {
+  const formatOpeningHours = (openingHours: Record<string, string> | undefined) => {
     if (!openingHours || Object.keys(openingHours).length === 0) {
       return "Hours not available";
     }
@@ -50,7 +51,7 @@ const RestaurantDetails = () => {
       "saturday",
       "sunday",
     ];
-    const dayNames = {
+    const dayNames: Record<string, string> = {
       monday: "Monday",
       tuesday: "Tuesday",
       wednesday: "Wednesday",
@@ -67,6 +68,7 @@ const RestaurantDetails = () => {
   };
 
   const handleBookTable = () => {
+    if (!restaurant) return;
     navigate(`/availability/${restaurant.name}`, {
       state: { restaurant },
     });
@@ -106,7 +108,7 @@ const RestaurantDetails = () => {
             <h1>{restaurant.name}</h1>
             <div className="restaurant-rating">
               <span className="stars">
-                {renderStars(restaurant.average_rating)}
+                {renderStars(restaurant.average_rating || 0)}
               </span>
               <span className="rating-text">
                 {restaurant.average_rating}/5 ({restaurant.total_reviews}{" "}

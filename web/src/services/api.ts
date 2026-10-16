@@ -92,7 +92,7 @@ export const userAPI = {
   },
 
   // Update user profile
-  updateProfile: async (profileData) => {
+  updateProfile: async (profileData: Record<string, unknown>) => {
     // Filter out fields that shouldn't be updated (username, email, id)
     const {
       username: _username,

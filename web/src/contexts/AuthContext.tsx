@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useContext, createContext } from "react";
 import type { ReactNode } from "react";
 import { authService } from "../services/auth";
+import {type  ProfileData } from "../types"
+import {type  UserData } from "../types"
+
 
 export interface AuthUser {
   id?: string | number;
@@ -15,9 +18,9 @@ interface AuthContextValue {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<any>;
-  register: (userData: Record<string, unknown>) => Promise<any>;
+  register: (userData: UserData) => Promise<any>;
   logout: () => Promise<void>;
-  updateProfile: (profileData: Record<string, unknown>) => Promise<AuthUser>;
+  updateProfile: (profileData:ProfileData) => Promise<AuthUser>;
   refreshToken: () => Promise<string>;
   isAuthenticated: () => boolean;
   clearError: () => void;
@@ -89,7 +92,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (userData: Record<string, unknown>) => {
+  const register = async (userData: UserData) => {
     try {
       setLoading(true);
       setError(null);
@@ -125,7 +128,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const updateProfile = async (profileData: Record<string, unknown>) => {
+  const updateProfile = async (profileData: ProfileData) => {
     try {
       setLoading(true);
       setError(null);

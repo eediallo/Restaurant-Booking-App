@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BookingTemplates.css";
 import { useAuth } from "../contexts/AuthContext";
+import type { BookingTemplate } from "../types";
 import "./BookingTemplates.css";
 
 const BookingTemplates = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState<BookingTemplate[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
 
@@ -25,7 +26,7 @@ const BookingTemplates = () => {
     loadBookingTemplates();
   }, [loadBookingTemplates]);
 
-  const deleteTemplate = (templateId) => {
+  const deleteTemplate = (templateId: BookingTemplate["id"]) => {
     const updatedTemplates = templates.filter((t) => t.id !== templateId);
     setTemplates(updatedTemplates);
     localStorage.setItem(
@@ -34,7 +35,7 @@ const BookingTemplates = () => {
     );
   };
 
-  const applyTemplate = (template) => {
+  const applyTemplate = (template: BookingTemplate) => {
     // Store template data and navigate to booking form
     localStorage.setItem(
       "pendingBooking",

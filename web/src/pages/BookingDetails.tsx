@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import type { Booking } from "../types";
 import "./BookingDetails.css";
 
 const BookingDetails = () => {
   const { bookingReference } = useParams();
   const navigate = useNavigate();
-  const [booking, setBooking] = useState(null);
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [existingReview, setExistingReview] = useState(null);
+  const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ const BookingDetails = () => {
         // First try to get booking from user's dashboard to get restaurant info
         const dashboardResponse = await api.get(`/api/user/bookings`);
         const userBooking = dashboardResponse.data.find(
-          (b) => b.booking_reference === bookingReference
+          (b: Booking) => b.booking_reference === bookingReference
         );
 
         if (userBooking) {
@@ -73,7 +74,7 @@ const BookingDetails = () => {
     fetchBookingDetails();
   }, [bookingReference]);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -82,7 +83,7 @@ const BookingDetails = () => {
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -90,7 +91,7 @@ const BookingDetails = () => {
     });
   };
 
-  const formatDateTime = (dateTimeString) => {
+  const formatDateTime = (dateTimeString: string) => {
     return new Date(dateTimeString).toLocaleString("en-US", {
       year: "numeric",
       month: "short",

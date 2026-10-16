@@ -1,7 +1,9 @@
 import { api } from "./api";
+import {type  ProfileData } from "../types"
+import {type  UserData } from "../types"
 
 class AuthService {
-  async login(email, password) {
+  async login(email: string, password: string) {
     const response = await api.post("/api/auth/login", {
       username: email, // Backend expects username field but uses email
       password,
@@ -9,7 +11,7 @@ class AuthService {
     return response.data;
   }
 
-  async register(userData) {
+  async register(userData: UserData) {
     const response = await api.post("/api/auth/register", userData);
     return response.data;
   }
@@ -24,12 +26,12 @@ class AuthService {
     return response.data;
   }
 
-  async updateProfile(profileData) {
+  async updateProfile(profileData: ProfileData) {
     const response = await api.patch("/api/user/profile", profileData);
     return response.data;
   }
 
-  async refreshToken(refreshToken) {
+  async refreshToken(refreshToken: string) {
     const response = await api.post("/api/auth/refresh", {
       refresh_token: refreshToken,
     });

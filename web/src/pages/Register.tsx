@@ -5,6 +5,8 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import "./Register.css";
 
+type ErrorMessage = Record<string, string>;
+
 const Register = () => {
   const [formData, setFormData] = useState<{
     firstName: string;
@@ -23,7 +25,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<ErrorMessage>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const { register, isAuthenticated, error: authError } = useAuth();
@@ -37,7 +39,7 @@ const Register = () => {
   }, [isAuthenticated, navigate]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: ErrorMessage = {};
 
     // First name validation
     if (!formData.firstName.trim()) {

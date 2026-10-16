@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import BookingCard from "../components/BookingCard";
 import type { BookingCardData } from "../components/BookingCard";
-import type { CancellationReason } from "../types";
+import type { Booking, CancellationReason } from "../types";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -90,9 +90,9 @@ const Dashboard = () => {
         case "date-desc":
           return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
         case "created-asc":
-          return new Date((a as any).created_at).getTime() - new Date((b as any).created_at).getTime();
+          return new Date(a.created_at ?? "").getTime() - new Date(b.created_at ?? "").getTime();
         case "created-desc":
-          return new Date((b as any).created_at).getTime() - new Date((a as any).created_at).getTime();
+          return new Date(b.created_at ?? "").getTime() - new Date(a.created_at ?? "").getTime();
         case "party-size-asc":
           return a.party_size - b.party_size;
         case "party-size-desc":
@@ -108,7 +108,7 @@ const Dashboard = () => {
   const fetchUserBookings = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/user/bookings");
+      const response = await api.get<Booking[]>("/api/user/bookings");
       setUserBookings(response.data);
     } catch (err) {
       setError("Failed to load your bookings");

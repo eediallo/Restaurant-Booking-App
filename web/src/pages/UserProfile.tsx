@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { triggerHapticFeedback } from "../utils/mobileUtils";
 import { userAPI } from "../services/api";
 import "./UserProfile.css";
-import {type  ProfileData } from "../types"
+import type { ProfileData } from "../types";
 
 
 
@@ -92,32 +92,42 @@ const UserProfile = () => {
     if (field.includes(".")) {
       // Handle nested fields like dining_preferences.seating_preference
       const [parent, child] = field.split(".");
-      setProfileData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }));
+      setProfileData((prev) => {
+        if (parent === "dining_preferences") {
+          return { ...prev, dining_preferences: { ...prev.dining_preferences, [child]: value } as ProfileData["dining_preferences"] };
+        }
+        if (parent === "notification_preferences") {
+          return { ...prev, notification_preferences: { ...prev.notification_preferences, [child]: value } as ProfileData["notification_preferences"] };
+        }
+        if (parent === "emergency_contact") {
+          return { ...prev, emergency_contact: { ...prev.emergency_contact, [child]: value } as ProfileData["emergency_contact"] };
+        }
+        return prev;
+      });
     } else {
-      setProfileData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      const textFields = ["username", "email", "first_name", "last_name", "phone", "date_of_birth", "accessibility_needs"] as const;
+      if (textFields.some((textField) => textField === field) && typeof value === "string") {
+        setProfileData((prev) => ({ ...prev, [field]: value } as ProfileData));
+      }
     }
   };
 
   const handleArrayChange = (field: string, value: string, checked: boolean) => {
     const [parent, child] = field.split(".");
-    setProfileData((prev) => ({
-      ...prev,
-      [parent]: {
-        ...prev[parent],
-        [child]: checked
-          ? [...prev[parent][child], value]
-          : prev[parent][child].filter((item: string) => item !== value),
-      },
-    }));
+    if (parent !== "dining_preferences") return;
+    const arrayField = child as keyof Pick<ProfileData["dining_preferences"], "dietary_restrictions" | "preferred_cuisine" | "occasion_types">;
+    setProfileData((prev) => {
+      const currentValues = prev.dining_preferences[arrayField];
+      return {
+        ...prev,
+        dining_preferences: {
+          ...prev.dining_preferences,
+          [arrayField]: checked
+            ? [...currentValues, value]
+            : currentValues.filter((item) => item !== value),
+        },
+      };
+    });
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,19 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSwipeGesture, triggerHapticFeedback } from "../utils/mobileUtils";
+import type { Booking } from "../types";
 
-export interface BookingCardData {
-  booking_reference: string;
-  status?: string;
-  restaurant?: string;
-  restaurant_name?: string;
-  visit_date: string;
-  visit_time: string;
-  party_size: number;
-  special_requests?: string;
-  created_at?: string;
-  customer?: { first_name?: string; surname?: string };
-}
+export type BookingCardData = Booking;
 
 interface BookingCardProps {
   booking: BookingCardData;

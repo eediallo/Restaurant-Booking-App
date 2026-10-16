@@ -1,18 +1,17 @@
 import { api } from "./api";
-import {type  ProfileData } from "../types"
-import {type  UserData } from "../types"
+import type { AuthResponse, AuthUser, ProfileData, UserData } from "../types";
 
 class AuthService {
-  async login(email: string, password: string) {
-    const response = await api.post("/api/auth/login", {
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/api/auth/login", {
       username: email, // Backend expects username field but uses email
       password,
     });
     return response.data;
   }
 
-  async register(userData: UserData) {
-    const response = await api.post("/api/auth/register", userData);
+  async register(userData: UserData): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/api/auth/register", userData);
     return response.data;
   }
 
@@ -21,18 +20,18 @@ class AuthService {
     return response.data;
   }
 
-  async getCurrentUser() {
-    const response = await api.get("/api/auth/me");
+  async getCurrentUser(): Promise<AuthUser> {
+    const response = await api.get<AuthUser>("/api/auth/me");
     return response.data;
   }
 
-  async updateProfile(profileData: ProfileData) {
-    const response = await api.patch("/api/user/profile", profileData);
+  async updateProfile(profileData: ProfileData): Promise<AuthUser> {
+    const response = await api.patch<AuthUser>("/api/user/profile", profileData);
     return response.data;
   }
 
   async refreshToken(refreshToken: string) {
-    const response = await api.post("/api/auth/refresh", {
+    const response = await api.post<{ access_token: string }>("/api/auth/refresh", {
       refresh_token: refreshToken,
     });
     return response.data;
@@ -45,9 +44,13 @@ class AuthService {
 
     try {
       // Check if token is expired (basic check)
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      const payload: unknown = JSON.parse(atob(token.split(".")[1] ?? ""));
+      if (typeof payload !== "object" || payload === null || !("exp" in payload)) {
+        return false;
+      }
+      const expiration = payload.exp;
       const currentTime = Date.now() / 1000;
-      return payload.exp > currentTime;
+      return typeof expiration === "number" && expiration > currentTime;
     } catch {
       return false;
     }

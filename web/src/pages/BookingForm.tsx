@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
-import type { AvailabilitySlot, Restaurant } from "../types";
+import type { AvailabilitySlot, BookingConfirmation, PendingBooking, Restaurant } from "../types";
 import Input from "../components/ui/Input";
 import "./BookingForm.css";
 
@@ -31,7 +31,7 @@ const BookingForm = () => {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
-    let bookingDataSource = null;
+    let bookingDataSource: PendingBooking | null = null;
     let sourceType = "";
 
     // First check if there's booking data from navigation state
@@ -44,7 +44,7 @@ const BookingForm = () => {
 
       if (pendingBooking) {
         try {
-          bookingDataSource = JSON.parse(pendingBooking);
+          bookingDataSource = JSON.parse(pendingBooking) as PendingBooking;
           sourceType = "localStorage";
         } catch {
           // Error parsing data, redirect to availability
@@ -118,7 +118,7 @@ const BookingForm = () => {
       // Use restaurant name from the pending booking, fallback to default
       const restaurantName = restaurant?.name || "TheHungryUnicorn"; // Default to original restaurant if none selected
 
-      const response = await api.post(
+      const response = await api.post<BookingConfirmation>(
         `/api/ConsumerApi/v1/Restaurant/${restaurantName}/BookingWithStripeToken`,
         formData,
         {

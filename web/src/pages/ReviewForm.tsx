@@ -29,14 +29,14 @@ const ReviewForm = () => {
       try {
         setLoading(true);
         // Get user's bookings to find the restaurant name
-        const userBookingsResponse = await api.get("/api/user/bookings");
+        const userBookingsResponse = await api.get<Booking[]>("/api/user/bookings");
         const userBooking = userBookingsResponse.data.find(
           (b: Booking) => b.booking_reference === bookingReference
         );
 
         if (userBooking) {
           const restaurantName = userBooking.restaurant_name;
-          const response = await api.get(
+          const response = await api.get<Booking>(
             `/api/ConsumerApi/v1/Restaurant/${restaurantName}/Booking/${bookingReference}`
           );
           setBooking({

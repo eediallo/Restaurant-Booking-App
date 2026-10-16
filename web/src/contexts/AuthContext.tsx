@@ -1,24 +1,14 @@
 import React, { useEffect, useState, useContext, createContext } from "react";
 import type { ReactNode } from "react";
 import { authService } from "../services/auth";
-import {type  ProfileData } from "../types"
-import {type  UserData } from "../types"
-
-
-export interface AuthUser {
-  id?: string | number;
-  username?: string;
-  email?: string;
-  first_name?: string;
-  [key: string]: any;
-}
+import type { AuthResponse, AuthUser, ProfileData, UserData } from "../types";
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<any>;
-  register: (userData: UserData) => Promise<any>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (userData: UserData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateProfile: (profileData:ProfileData) => Promise<AuthUser>;
   refreshToken: () => Promise<string>;

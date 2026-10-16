@@ -2,8 +2,20 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BookingTemplates.css";
 import { useAuth } from "../contexts/AuthContext";
-import type { BookingTemplate } from "../types";
+import type { BookingTemplate, BookingTemplatePreset } from "../types";
 import "./BookingTemplates.css";
+
+const isBookingTemplate = (value: unknown): value is BookingTemplate => {
+  if (typeof value !== "object" || value === null) return false;
+  const template = value as Record<string, unknown>;
+  return (
+    (typeof template.id === "number" || typeof template.id === "string") &&
+    typeof template.name === "string" &&
+    typeof template.party_size === "number" &&
+    (template.preferred_time === undefined || typeof template.preferred_time === "string") &&
+    (template.special_requests === undefined || typeof template.special_requests === "string")
+  );
+};
 
 const BookingTemplates = () => {
   const { user } = useAuth();
@@ -18,7 +30,8 @@ const BookingTemplates = () => {
       `booking_templates_${user?.id}`
     );
     if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
+      const parsed: unknown = JSON.parse(savedTemplates);
+      if (Array.isArray(parsed)) setTemplates(parsed.filter(isBookingTemplate));
     }
   }, [user?.id]);
 
@@ -35,7 +48,7 @@ const BookingTemplates = () => {
     );
   };
 
-  const applyTemplate = (template: BookingTemplate) => {
+  const applyTemplate = (template: BookingTemplatePreset) => {
     // Store template data and navigate to booking form
     localStorage.setItem(
       "pendingBooking",

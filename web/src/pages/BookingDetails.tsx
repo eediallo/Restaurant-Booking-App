@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import type { Booking } from "../types";
+import type { Booking, Review } from "../types";
 import "./BookingDetails.css";
 
 const BookingDetails = () => {
@@ -11,7 +11,7 @@ const BookingDetails = () => {
   const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
+  const [existingReview, setExistingReview] = useState<Review | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const BookingDetails = () => {
       try {
         setLoading(true);
         // First try to get booking from user's dashboard to get restaurant info
-        const dashboardResponse = await api.get(`/api/user/bookings`);
+        const dashboardResponse = await api.get<Booking[]>(`/api/user/bookings`);
         const userBooking = dashboardResponse.data.find(
           (b: Booking) => b.booking_reference === bookingReference
         );
@@ -29,7 +29,7 @@ const BookingDetails = () => {
           const restaurantNameFromBooking =
             userBooking.restaurant_name || "TheHungryUnicorn";
           setRestaurantName(restaurantNameFromBooking);
-          const response = await api.get(
+          const response = await api.get<Booking>(
             `/api/ConsumerApi/v1/Restaurant/${restaurantNameFromBooking}/Booking/${bookingReference}`
           );
           setBooking(response.data);
@@ -40,7 +40,7 @@ const BookingDetails = () => {
           // Fallback to default restaurant if booking not found in user's list
           const defaultRestaurant = "TheHungryUnicorn";
           setRestaurantName(defaultRestaurant);
-          const response = await api.get(
+          const response = await api.get<Booking>(
             `/api/ConsumerApi/v1/Restaurant/${defaultRestaurant}/Booking/${bookingReference}`
           );
           setBooking(response.data);
@@ -59,7 +59,7 @@ const BookingDetails = () => {
     const checkExistingReview = async () => {
       try {
         setReviewLoading(true);
-        const reviewResponse = await api.get(
+        const reviewResponse = await api.get<Review | null>(
           `/api/reviews/booking/${bookingReference}`
         );
         setExistingReview(reviewResponse.data);

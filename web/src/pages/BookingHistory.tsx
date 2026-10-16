@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import type { Booking } from "../types";
+import type { Booking, BookingHistoryPage } from "../types";
 import "./BookingHistory.css";
 
 const BookingHistory = () => {
@@ -41,7 +41,7 @@ const BookingHistory = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/user/bookings/history");
+      const response = await api.get<BookingHistoryPage>("/api/user/bookings/history");
       setBookings(response.data.bookings || []);
     } catch (err) {
       setError("Failed to load booking history");

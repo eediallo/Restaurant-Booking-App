@@ -16,7 +16,7 @@ const RestaurantDetails = () => {
       setLoading(true);
 
       // Get restaurant details directly by name using the new API endpoint
-      const response = await api.get(
+      const response = await api.get<Restaurant>(
         `/api/restaurants/name/${encodeURIComponent(restaurantName || "")}`
       );
 
@@ -294,7 +294,7 @@ const RestaurantDetails = () => {
                   )}
 
                   <div className="review-date">
-                    {new Date(review.created_at).toLocaleDateString()}
+                    {new Date(review.created_at ?? 0).toLocaleDateString()}
                   </div>
                 </div>
               ))}

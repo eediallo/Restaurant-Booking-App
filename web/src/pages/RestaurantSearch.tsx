@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import type { Restaurant } from "../types";
+import type { Restaurant, RestaurantListResponse } from "../types";
 import "./RestaurantSearch.css";
 
 const RestaurantSearch = () => {
@@ -44,7 +44,7 @@ const RestaurantSearch = () => {
       if (minRating) params.min_rating = parseInt(minRating);
       if (searchTerm) params.search = searchTerm;
 
-      const response = await api.get("/api/restaurants/", { params });
+      const response = await api.get<RestaurantListResponse>("/api/restaurants/", { params });
       setRestaurants(response.data.restaurants || []);
     } catch (err) {
       setError("Failed to load restaurants");
@@ -57,9 +57,9 @@ const RestaurantSearch = () => {
   const fetchFilterOptions = async () => {
     try {
       const [cuisinesRes, locationsRes, priceRangesRes] = await Promise.all([
-        api.get("/api/restaurants/search/cuisines"),
-        api.get("/api/restaurants/search/locations"),
-        api.get("/api/restaurants/search/price-ranges"),
+        api.get<string[]>("/api/restaurants/search/cuisines"),
+        api.get<string[]>("/api/restaurants/search/locations"),
+        api.get<string[]>("/api/restaurants/search/price-ranges"),
       ]);
 
       setCuisines(cuisinesRes.data);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { api } from "../services/api";
-import type { AvailabilitySlot, Restaurant } from "../types";
+import type { AvailabilitySearchResponse, AvailabilitySlot, Restaurant, RestaurantListResponse } from "../types";
 import "./BookingSearch.css";
 
 const BookingSearch = () => {
@@ -45,7 +45,7 @@ const BookingSearch = () => {
   const loadRestaurants = async () => {
     setLoadingRestaurants(true);
     try {
-      const response = await api.get("/api/restaurants/");
+      const response = await api.get<RestaurantListResponse>("/api/restaurants/");
       setRestaurants(response.data.restaurants || []);
     } catch (err) {
       console.error("Error loading restaurants:", err);
@@ -87,7 +87,7 @@ const BookingSearch = () => {
       );
       const restaurantName = restaurant ? restaurant.name : selectedRestaurant;
 
-      const response = await api.post(
+      const response = await api.post<AvailabilitySearchResponse>(
         `/api/ConsumerApi/v1/Restaurant/${restaurantName}/AvailabilitySearch`,
         formData,
         {

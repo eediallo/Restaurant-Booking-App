@@ -1,36 +1,39 @@
 name: Run All Tests
 
 on:
+  workflow_call:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test:
+  frontend-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          cache: 'npm'
-          node-version: ${{ matrix.node-version }}
-          cache-dependency-path: 'web/package-lock.json'         
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
-        working-directory: web  
-      - name: Run Vitest tests
-        run: |
-          ./tools/run_unit_tests.sh
+        working-directory: web
 
-  python-tests:
+      - name: Run frontend tests
+        run: ./tools/run_unit_tests.sh
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: web
+
+  backend-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,5 +46,21 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Python tests
+      - name: Run backend tests
         run: python -m pytest tests/ --tb=short
+
+  all-tests-passed:
+    if: always()
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every test job to pass
+        env:
+          FRONTEND_RESULT: ${{ needs.frontend-tests.result }}
+          PYTHON_RESULT: ${{ needs.backend-tests.result }}
+        run: |
+          if [[ "$FRONTEND_RESULT" != "success" || "$PYTHON_RESULT" != "success" ]]; then
+            echo "Frontend tests/build: $FRONTEND_RESULT"
+            echo "Backend tests: $PYTHON_RESULT"
+            exit 1
+          fi

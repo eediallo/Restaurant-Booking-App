@@ -1,4 +1,4 @@
-name: Run Unit Tests
+name: Run All Tests
 
 on:
   push:
@@ -26,4 +26,22 @@ jobs:
         working-directory: web  
       - name: Run Vitest tests
         run: |
-            ./tools/run_unit_tests.sh
+          ./tools/run_unit_tests.sh
+
+  python-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Python tests
+        run: python -m pytest tests/ --tb=short

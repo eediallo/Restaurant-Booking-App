@@ -4,13 +4,21 @@ import { useAuth } from "../contexts/AuthContext";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import "./Login.css";
+import {
+  validatePassword,
+  validateEmail,
+  type ErrorMessage,
+  validateRequiredField,
+} from "../lib/form/formValidation";
 
 const Login = () => {
-  const [formData, setFormData] = useState<{ email: string; password: string }>({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<{ email: string; password: string }>(
+    {
+      email: "",
+      password: "",
+    },
+  );
+  const [errors, setErrors] = useState<ErrorMessage>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, isAuthenticated, error: authError } = useAuth();
@@ -26,19 +34,10 @@ const Login = () => {
   }, [isAuthenticated, navigate, location]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: ErrorMessage = {};
 
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
+    validateEmail(formData.email, newErrors);
+    validateRequiredField(formData.password, 'password', newErrors);
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,7 +90,7 @@ const Login = () => {
           <p>Sign in to your restaurant booking account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className="login-form" noValidate>
           {authError && (
             <div className="error-banner" role="alert">
               {authError}

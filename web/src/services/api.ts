@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { Booking, ProfileData, UserProfile } from "../types";
 
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
@@ -86,13 +87,13 @@ export { api };
 // User Profile API functions
 export const userAPI = {
   // Get user profile
-  getProfile: async () => {
-    const response = await api.get("/api/user/profile");
+  getProfile: async (): Promise<UserProfile> => {
+    const response = await api.get<UserProfile>("/api/user/profile");
     return response.data;
   },
 
   // Update user profile
-  updateProfile: async (profileData) => {
+  updateProfile: async (profileData: ProfileData): Promise<UserProfile> => {
     // Filter out fields that shouldn't be updated (username, email, id)
     const {
       username: _username,
@@ -100,13 +101,13 @@ export const userAPI = {
       id: _id,
       ...updateData
     } = profileData;
-    const response = await api.patch("/api/user/profile", updateData);
+    const response = await api.patch<UserProfile>("/api/user/profile", updateData);
     return response.data;
   },
 
   // Get user bookings
-  getBookings: async () => {
-    const response = await api.get("/api/user/bookings");
+  getBookings: async (): Promise<Booking[]> => {
+    const response = await api.get<Booking[]>("/api/user/bookings");
     return response.data;
   },
 };

@@ -1,18 +1,19 @@
 // Phase 3A: Touch gesture utilities for enhanced mobile experience
 // Simple swipe detection for booking cards
+import type { TouchEvent as ReactTouchEvent } from "react";
 
-export const useSwipeGesture = (onSwipeLeft, onSwipeRight, threshold = 50) => {
+export const useSwipeGesture = (onSwipeLeft?: () => void, onSwipeRight?: () => void, threshold = 50) => {
   let startX = 0;
   let startY = 0;
   let endX = 0;
   let endY = 0;
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: ReactTouchEvent) => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
   };
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = (e: ReactTouchEvent) => {
     endX = e.touches[0].clientX;
     endY = e.touches[0].clientY;
   };
@@ -39,7 +40,7 @@ export const useSwipeGesture = (onSwipeLeft, onSwipeRight, threshold = 50) => {
 };
 
 // Haptic feedback utility for mobile devices
-export const triggerHapticFeedback = (type = "light") => {
+export const triggerHapticFeedback = (type: "light" | "medium" | "heavy" = "light") => {
   if (navigator.vibrate) {
     switch (type) {
       case "light":
@@ -84,7 +85,7 @@ export const getViewportHeight = () => {
 };
 
 // Mobile keyboard handling
-export const handleMobileKeyboard = (element) => {
+export const handleMobileKeyboard = (element: HTMLElement) => {
   let initialViewportHeight = window.innerHeight;
 
   const handleResize = () => {

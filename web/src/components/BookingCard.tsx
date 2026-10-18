@@ -1,8 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSwipeGesture, triggerHapticFeedback } from "../utils/mobileUtils";
+import type { Booking } from "../types";
 
-const BookingCard = ({ booking, onEdit, formatDate, formatTime }) => {
+export type BookingCardData = Booking;
+
+interface BookingCardProps {
+  booking: BookingCardData;
+  onEdit: (booking: BookingCardData) => void;
+  formatDate: (date: string) => string;
+  formatTime: (time: string) => string;
+}
+
+const BookingCard = ({ booking, onEdit, formatDate, formatTime }: BookingCardProps) => {
   const navigate = useNavigate();
 
   const swipeGestures = useSwipeGesture(

@@ -3,10 +3,13 @@ import { useAuth } from "../contexts/AuthContext";
 import { triggerHapticFeedback } from "../utils/mobileUtils";
 import { userAPI } from "../services/api";
 import "./UserProfile.css";
+import type { ProfileData } from "../types";
+
+
 
 const UserProfile = () => {
   const { user } = useAuth();
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
     email: "",
     first_name: "",
@@ -15,10 +18,10 @@ const UserProfile = () => {
     // Extended profile fields
     date_of_birth: "",
     dining_preferences: {
-      dietary_restrictions: [],
-      preferred_cuisine: [],
+      dietary_restrictions: [] as string[],
+      preferred_cuisine: [] as string[],
       seating_preference: "",
-      occasion_types: [],
+      occasion_types: [] as string[],
     },
     notification_preferences: {
       email_notifications: true,
@@ -39,7 +42,7 @@ const UserProfile = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("basic");
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -85,44 +88,54 @@ const UserProfile = () => {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     if (field.includes(".")) {
       // Handle nested fields like dining_preferences.seating_preference
       const [parent, child] = field.split(".");
-      setProfileData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }));
+      setProfileData((prev) => {
+        if (parent === "dining_preferences") {
+          return { ...prev, dining_preferences: { ...prev.dining_preferences, [child]: value } as ProfileData["dining_preferences"] };
+        }
+        if (parent === "notification_preferences") {
+          return { ...prev, notification_preferences: { ...prev.notification_preferences, [child]: value } as ProfileData["notification_preferences"] };
+        }
+        if (parent === "emergency_contact") {
+          return { ...prev, emergency_contact: { ...prev.emergency_contact, [child]: value } as ProfileData["emergency_contact"] };
+        }
+        return prev;
+      });
     } else {
-      setProfileData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      const textFields = ["username", "email", "first_name", "last_name", "phone", "date_of_birth", "accessibility_needs"] as const;
+      if (textFields.some((textField) => textField === field) && typeof value === "string") {
+        setProfileData((prev) => ({ ...prev, [field]: value } as ProfileData));
+      }
     }
   };
 
-  const handleArrayChange = (field, value, checked) => {
+  const handleArrayChange = (field: string, value: string, checked: boolean) => {
     const [parent, child] = field.split(".");
-    setProfileData((prev) => ({
-      ...prev,
-      [parent]: {
-        ...prev[parent],
-        [child]: checked
-          ? [...prev[parent][child], value]
-          : prev[parent][child].filter((item) => item !== value),
-      },
-    }));
+    if (parent !== "dining_preferences") return;
+    const arrayField = child as keyof Pick<ProfileData["dining_preferences"], "dietary_restrictions" | "preferred_cuisine" | "occasion_types">;
+    setProfileData((prev) => {
+      const currentValues = prev.dining_preferences[arrayField];
+      return {
+        ...prev,
+        dining_preferences: {
+          ...prev.dining_preferences,
+          [arrayField]: checked
+            ? [...currentValues, value]
+            : currentValues.filter((item) => item !== value),
+        },
+      };
+    });
   };
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatarPreview(reader.result);
+        if (typeof reader.result === "string") setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -342,7 +355,7 @@ const UserProfile = () => {
                       handleInputChange("accessibility_needs", e.target.value)
                     }
                     placeholder="Please describe any accessibility requirements..."
-                    rows="3"
+                    rows={3}
                   />
                 </div>
               </div>

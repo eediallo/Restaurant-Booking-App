@@ -1,5 +1,13 @@
 import React from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import "./Button.css";
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: string;
+  size?: string;
+  loading?: boolean;
+  children: ReactNode;
+}
 
 const Button = ({
   variant = "primary",
@@ -9,7 +17,7 @@ const Button = ({
   children,
   className = "",
   ...props
-}) => {
+}: ButtonProps) => {
   const classes = `btn btn-${variant} btn-${size} ${className}`;
 
   return (

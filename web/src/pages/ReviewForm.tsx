@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import type { Booking } from "../types";
 import "./ReviewForm.css";
 
 const ReviewForm = () => {
   const { bookingReference } = useParams();
   const navigate = useNavigate();
-  const [booking, setBooking] = useState(null);
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -28,14 +29,14 @@ const ReviewForm = () => {
       try {
         setLoading(true);
         // Get user's bookings to find the restaurant name
-        const userBookingsResponse = await api.get("/api/user/bookings");
+        const userBookingsResponse = await api.get<Booking[]>("/api/user/bookings");
         const userBooking = userBookingsResponse.data.find(
-          (b) => b.booking_reference === bookingReference
+          (b: Booking) => b.booking_reference === bookingReference
         );
 
         if (userBooking) {
           const restaurantName = userBooking.restaurant_name;
-          const response = await api.get(
+          const response = await api.get<Booking>(
             `/api/ConsumerApi/v1/Restaurant/${restaurantName}/Booking/${bookingReference}`
           );
           setBooking({
@@ -56,21 +57,21 @@ const ReviewForm = () => {
     fetchBookingDetails();
   }, [bookingReference]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setReviewData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleRatingChange = (field, rating) => {
+  const handleRatingChange = (field: string, rating: number) => {
     setReviewData((prev) => ({
       ...prev,
       [field]: rating,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
@@ -104,7 +105,7 @@ const ReviewForm = () => {
     }
   };
 
-  const renderStarRating = (currentRating, onRatingChange, label) => {
+  const renderStarRating = (currentRating: number, onRatingChange: (rating: number) => void, label: string) => {
     return (
       <div className="star-rating-input">
         <label>{label}</label>
@@ -127,7 +128,7 @@ const ReviewForm = () => {
     );
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -136,7 +137,7 @@ const ReviewForm = () => {
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -189,11 +190,11 @@ const ReviewForm = () => {
           </div>
           <div className="detail-item">
             <span className="label">Date:</span>
-            <span className="value">{formatDate(booking?.visit_date)}</span>
+            <span className="value">{formatDate(booking?.visit_date || "")}</span>
           </div>
           <div className="detail-item">
             <span className="label">Time:</span>
-            <span className="value">{formatTime(booking?.visit_time)}</span>
+            <span className="value">{formatTime(booking?.visit_time || "")}</span>
           </div>
           <div className="detail-item">
             <span className="label">Party Size:</span>

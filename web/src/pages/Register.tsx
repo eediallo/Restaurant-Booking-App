@@ -5,8 +5,18 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import "./Register.css";
 
+type ErrorMessage = Record<string, string>;
+
 const Register = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+  }>({
     firstName: "",
     lastName: "",
     email: "",
@@ -15,7 +25,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<ErrorMessage>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const { register, isAuthenticated, error: authError } = useAuth();
@@ -29,7 +39,7 @@ const Register = () => {
   }, [isAuthenticated, navigate]);
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: ErrorMessage = {};
 
     // First name validation
     if (!formData.firstName.trim()) {
@@ -81,7 +91,7 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -97,7 +107,7 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import type { Booking, BookingHistoryPage } from "../types";
 import "./BookingHistory.css";
 
 const BookingHistory = () => {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState([]);
-  const [filteredBookings, setFilteredBookings] = useState([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -40,7 +41,7 @@ const BookingHistory = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/user/bookings/history");
+      const response = await api.get<BookingHistoryPage>("/api/user/bookings/history");
       setBookings(response.data.bookings || []);
     } catch (err) {
       setError("Failed to load booking history");
@@ -59,7 +60,7 @@ const BookingHistory = () => {
       filtered = filtered.filter(
         (booking) =>
           booking.booking_reference.toLowerCase().includes(searchLower) ||
-          booking.restaurant_name.toLowerCase().includes(searchLower) ||
+          (booking.restaurant_name || "").toLowerCase().includes(searchLower) ||
           `${booking.customer?.first_name} ${booking.customer?.surname}`
             .toLowerCase()
             .includes(searchLower)
@@ -96,22 +97,22 @@ const BookingHistory = () => {
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case "date_asc":
-          return new Date(a.visit_date) - new Date(b.visit_date);
+          return new Date(a.visit_date).getTime() - new Date(b.visit_date).getTime();
         case "date_desc":
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
         case "restaurant":
-          return a.restaurant_name.localeCompare(b.restaurant_name);
+          return (a.restaurant_name || "").localeCompare(b.restaurant_name || "");
         case "status":
           return a.status.localeCompare(b.status);
         default:
-          return new Date(b.visit_date) - new Date(a.visit_date);
+          return new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime();
       }
     });
 
     setFilteredBookings(filtered);
   }, [bookings, filters]);
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -131,7 +132,7 @@ const BookingHistory = () => {
     return restaurants.sort();
   };
 
-  const getStatusBadgeClass = (status) => {
+  const getStatusBadgeClass = (status: string) => {
     switch (status?.toLowerCase()) {
       case "confirmed":
         return "status-confirmed";
@@ -148,7 +149,7 @@ const BookingHistory = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
@@ -157,7 +158,7 @@ const BookingHistory = () => {
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -165,7 +166,7 @@ const BookingHistory = () => {
     });
   };
 
-  const handleBookingClick = (booking) => {
+  const handleBookingClick = (booking: Booking) => {
     navigate(`/booking/${booking.booking_reference}`);
   };
 

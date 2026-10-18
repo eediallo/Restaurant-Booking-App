@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import type { Restaurant, RestaurantListResponse } from "../types";
 import "./RestaurantSearch.css";
 
 const RestaurantSearch = () => {
   const navigate = useNavigate();
-  const [restaurants, setRestaurants] = useState([]);
-  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -16,20 +17,20 @@ const RestaurantSearch = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedPriceRange, setSelectedPriceRange] = useState("");
   const [minRating, setMinRating] = useState("");
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const [selectedDietary, setSelectedDietary] = useState([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedDietary, setSelectedDietary] = useState<string[]>([]);
 
   // Filter options
-  const [cuisines, setCuisines] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [priceRanges, setPriceRanges] = useState([]);
+  const [cuisines, setCuisines] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [priceRanges, setPriceRanges] = useState<string[]>([]);
 
   const fetchRestaurants = async () => {
     try {
       setLoading(true);
 
       // Build params object, only include non-empty values
-      const params = {
+      const params: Record<string, string | number> = {
         limit: 50,
       };
 
@@ -43,7 +44,7 @@ const RestaurantSearch = () => {
       if (minRating) params.min_rating = parseInt(minRating);
       if (searchTerm) params.search = searchTerm;
 
-      const response = await api.get("/api/restaurants/", { params });
+      const response = await api.get<RestaurantListResponse>("/api/restaurants/", { params });
       setRestaurants(response.data.restaurants || []);
     } catch (err) {
       setError("Failed to load restaurants");
@@ -56,9 +57,9 @@ const RestaurantSearch = () => {
   const fetchFilterOptions = async () => {
     try {
       const [cuisinesRes, locationsRes, priceRangesRes] = await Promise.all([
-        api.get("/api/restaurants/search/cuisines"),
-        api.get("/api/restaurants/search/locations"),
-        api.get("/api/restaurants/search/price-ranges"),
+        api.get<string[]>("/api/restaurants/search/cuisines"),
+        api.get<string[]>("/api/restaurants/search/locations"),
+        api.get<string[]>("/api/restaurants/search/price-ranges"),
       ]);
 
       setCuisines(cuisinesRes.data);
@@ -100,7 +101,7 @@ const RestaurantSearch = () => {
     applyFilters();
   }, [applyFilters]);
 
-  const toggleFeature = (feature) => {
+  const toggleFeature = (feature: string) => {
     setSelectedFeatures((prev) =>
       prev.includes(feature)
         ? prev.filter((f) => f !== feature)
@@ -108,7 +109,7 @@ const RestaurantSearch = () => {
     );
   };
 
-  const toggleDietary = (dietary) => {
+  const toggleDietary = (dietary: string) => {
     setSelectedDietary((prev) =>
       prev.includes(dietary)
         ? prev.filter((d) => d !== dietary)
@@ -126,19 +127,19 @@ const RestaurantSearch = () => {
     setSelectedDietary([]);
   };
 
-  const handleRestaurantSelect = (restaurant) => {
+  const handleRestaurantSelect = (restaurant: Restaurant) => {
     // Navigate to restaurant details page using restaurant name
     navigate(`/restaurant/${encodeURIComponent(restaurant.name)}`);
   };
 
-  const handleQuickBook = (restaurant) => {
+  const handleQuickBook = (restaurant: Restaurant) => {
     // Navigate to availability search for this restaurant
     navigate(`/availability/${restaurant.name}`, {
       state: { restaurant },
     });
   };
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     return "★".repeat(rating) + "☆".repeat(5 - rating);
   };
 
@@ -304,7 +305,7 @@ const RestaurantSearch = () => {
                   <h3>{restaurant.name}</h3>
                   <div className="restaurant-rating">
                     <span className="stars">
-                      {renderStars(restaurant.average_rating)}
+                      {renderStars(restaurant.average_rating || 0)}
                     </span>
                     <span className="rating-text">
                       {restaurant.average_rating}/5 ({restaurant.total_reviews}{" "}

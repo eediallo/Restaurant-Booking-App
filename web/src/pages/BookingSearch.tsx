@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { api } from "../services/api";
+import type { AvailabilitySearchResponse, AvailabilitySlot, Restaurant, RestaurantListResponse } from "../types";
 import "./BookingSearch.css";
 
 const BookingSearch = () => {
@@ -12,14 +13,14 @@ const BookingSearch = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState(
     restaurantId || ""
   );
-  const [restaurants, setRestaurants] = useState([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [searchParams, setSearchParams] = useState({
     visitDate: "",
     visitTime: "",
     partySize: 2,
     channelCode: "ONLINE",
   });
-  const [availableSlots, setAvailableSlots] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +45,7 @@ const BookingSearch = () => {
   const loadRestaurants = async () => {
     setLoadingRestaurants(true);
     try {
-      const response = await api.get("/api/restaurants/");
+      const response = await api.get<RestaurantListResponse>("/api/restaurants/");
       setRestaurants(response.data.restaurants || []);
     } catch (err) {
       console.error("Error loading restaurants:", err);
@@ -54,7 +55,7 @@ const BookingSearch = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSearchParams((prev) => ({
       ...prev,
@@ -62,7 +63,7 @@ const BookingSearch = () => {
     }));
   };
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedRestaurant) {
@@ -77,7 +78,7 @@ const BookingSearch = () => {
     try {
       const formData = new FormData();
       formData.append("VisitDate", searchParams.visitDate);
-      formData.append("PartySize", searchParams.partySize);
+      formData.append("PartySize", String(searchParams.partySize));
       formData.append("ChannelCode", searchParams.channelCode);
 
       // Find the selected restaurant to get its name
@@ -86,7 +87,7 @@ const BookingSearch = () => {
       );
       const restaurantName = restaurant ? restaurant.name : selectedRestaurant;
 
-      const response = await api.post(
+      const response = await api.post<AvailabilitySearchResponse>(
         `/api/ConsumerApi/v1/Restaurant/${restaurantName}/AvailabilitySearch`,
         formData,
         {
@@ -105,7 +106,7 @@ const BookingSearch = () => {
     }
   };
 
-  const handleBookSlot = (slot) => {
+  const handleBookSlot = (slot: AvailabilitySlot) => {
     // Get the selected restaurant information
     const restaurant = restaurants.find(
       (r) => r.id.toString() === selectedRestaurant
@@ -156,7 +157,7 @@ const BookingSearch = () => {
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -164,7 +165,7 @@ const BookingSearch = () => {
     });
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",

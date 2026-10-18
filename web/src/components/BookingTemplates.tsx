@@ -2,12 +2,25 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BookingTemplates.css";
 import { useAuth } from "../contexts/AuthContext";
+import type { BookingTemplate, BookingTemplatePreset } from "../types";
 import "./BookingTemplates.css";
+
+const isBookingTemplate = (value: unknown): value is BookingTemplate => {
+  if (typeof value !== "object" || value === null) return false;
+  const template = value as Record<string, unknown>;
+  return (
+    (typeof template.id === "number" || typeof template.id === "string") &&
+    typeof template.name === "string" &&
+    typeof template.party_size === "number" &&
+    (template.preferred_time === undefined || typeof template.preferred_time === "string") &&
+    (template.special_requests === undefined || typeof template.special_requests === "string")
+  );
+};
 
 const BookingTemplates = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState<BookingTemplate[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
 
@@ -17,7 +30,8 @@ const BookingTemplates = () => {
       `booking_templates_${user?.id}`
     );
     if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
+      const parsed: unknown = JSON.parse(savedTemplates);
+      if (Array.isArray(parsed)) setTemplates(parsed.filter(isBookingTemplate));
     }
   }, [user?.id]);
 
@@ -25,7 +39,7 @@ const BookingTemplates = () => {
     loadBookingTemplates();
   }, [loadBookingTemplates]);
 
-  const deleteTemplate = (templateId) => {
+  const deleteTemplate = (templateId: BookingTemplate["id"]) => {
     const updatedTemplates = templates.filter((t) => t.id !== templateId);
     setTemplates(updatedTemplates);
     localStorage.setItem(
@@ -34,7 +48,7 @@ const BookingTemplates = () => {
     );
   };
 
-  const applyTemplate = (template) => {
+  const applyTemplate = (template: BookingTemplatePreset) => {
     // Store template data and navigate to booking form
     localStorage.setItem(
       "pendingBooking",

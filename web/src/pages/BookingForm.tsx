@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
+import type { AvailabilitySlot, BookingConfirmation, PendingBooking, Restaurant } from "../types";
 import Input from "../components/ui/Input";
 import "./BookingForm.css";
 
@@ -26,11 +27,11 @@ const BookingForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [restaurant, setRestaurant] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
-    let bookingDataSource = null;
+    let bookingDataSource: PendingBooking | null = null;
     let sourceType = "";
 
     // First check if there's booking data from navigation state
@@ -43,7 +44,7 @@ const BookingForm = () => {
 
       if (pendingBooking) {
         try {
-          bookingDataSource = JSON.parse(pendingBooking);
+          bookingDataSource = JSON.parse(pendingBooking) as PendingBooking;
           sourceType = "localStorage";
         } catch {
           // Error parsing data, redirect to availability
@@ -81,15 +82,16 @@ const BookingForm = () => {
     }
   }, [navigate, location.state]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setBookingData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -101,10 +103,10 @@ const BookingForm = () => {
       // Booking details
       formData.append("VisitDate", bookingData.visitDate);
       formData.append("VisitTime", bookingData.visitTime);
-      formData.append("PartySize", bookingData.partySize);
+      formData.append("PartySize", String(bookingData.partySize));
       formData.append("ChannelCode", bookingData.channelCode);
       formData.append("SpecialRequests", bookingData.specialRequests);
-      formData.append("IsLeaveTimeConfirmed", bookingData.isLeaveTimeConfirmed);
+      formData.append("IsLeaveTimeConfirmed", String(bookingData.isLeaveTimeConfirmed));
 
       // Customer details
       formData.append("Customer[Title]", bookingData.title);
@@ -116,7 +118,7 @@ const BookingForm = () => {
       // Use restaurant name from the pending booking, fallback to default
       const restaurantName = restaurant?.name || "TheHungryUnicorn"; // Default to original restaurant if none selected
 
-      const response = await api.post(
+      const response = await api.post<BookingConfirmation>(
         `/api/ConsumerApi/v1/Restaurant/${restaurantName}/BookingWithStripeToken`,
         formData,
         {
@@ -270,7 +272,7 @@ const BookingForm = () => {
                 value={bookingData.specialRequests}
                 onChange={handleInputChange}
                 placeholder="Any dietary requirements, special occasions, or other requests..."
-                rows="3"
+                rows={3}
               />
             </div>
           </div>

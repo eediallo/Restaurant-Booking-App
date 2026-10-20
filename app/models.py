@@ -188,6 +188,7 @@ class Booking(Base):
     customer = relationship("Customer", back_populates="bookings")
     user = relationship("User", back_populates="bookings")
     review = relationship("RestaurantReview", back_populates="booking", uselist=False)
+    waitlist_entry = relationship("WaitlistEntry", back_populates="booking", uselist=False)
 
 
 class AvailabilitySlot(Base):
@@ -229,9 +230,13 @@ class WaitlistEntry(Base):
     party_size = Column(Integer, nullable=False)
     status = Column(String(20), nullable=False, default="waiting")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    offered_at = Column(DateTime)
+    offer_expires_at = Column(DateTime)
+    booking_id = Column(Integer, ForeignKey("bookings.id"), unique=True)
 
     user = relationship("User", back_populates="waitlist_entries")
     restaurant = relationship("Restaurant", back_populates="waitlist_entries")
+    booking = relationship("Booking", back_populates="waitlist_entry")
 
 
 class CancellationReason(Base):

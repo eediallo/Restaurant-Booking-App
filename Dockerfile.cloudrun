@@ -28,6 +28,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app/ ./app/
+COPY alembic.ini .
+COPY alembic/ ./alembic/
 
 # Create a minimal .env file for Cloud Run (environment variables will be set by Cloud Run)
 RUN echo "# Environment variables set by Cloud Run" > .env
@@ -37,7 +39,7 @@ COPY --from=frontend-builder /app/web/dist ./static
 
 # Initialize database and create startup script
 RUN python -m app.init_db && \
-    echo '#!/bin/bash\nuvicorn app.main:app --host 0.0.0.0 --port $PORT' > start.sh && \
+    echo '#!/bin/bash\npython -c "from app.database import Base, engine; import app.models; Base.metadata.create_all(bind=engine)"\nalembic upgrade head\nexec uvicorn app.main:app --host 0.0.0.0 --port $PORT' > start.sh && \
     chmod +x start.sh
 
 EXPOSE 8080

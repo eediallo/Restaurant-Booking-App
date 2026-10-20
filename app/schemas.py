@@ -3,8 +3,8 @@ Pydantic schemas for request/response validation.
 """
 
 from datetime import date, datetime, time
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from typing import Optional, Dict, Any
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserProfileUpdate(BaseModel):
@@ -89,3 +89,14 @@ class WaitlistEntryResponse(BaseModel):
     party_size: int
     status: str
     created_at: datetime
+    offered_at: Optional[datetime] = None
+    offer_expires_at: Optional[datetime] = None
+    booking_id: Optional[int] = None
+
+
+class WaitlistOfferAcceptResponse(BaseModel):
+    """Booking details returned after a user accepts a waitlist offer."""
+
+    booking_id: int
+    booking_reference: str
+    status: str

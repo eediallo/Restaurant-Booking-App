@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
-from app.routers import availability, booking, auth, user, restaurant, advanced_booking, reviews
+from app.routers import availability, booking, auth, user, restaurant, advanced_booking, reviews, waitlist
 from app.database import engine
 from app.models import Base
 import app.init_db as init_db
@@ -75,6 +75,7 @@ app.include_router(user.router)
 app.include_router(restaurant.router)
 app.include_router(advanced_booking.router)
 app.include_router(reviews.router)
+app.include_router(waitlist.router)
 
 
 @app.get("/api", summary="API Information", tags=["API Info"])

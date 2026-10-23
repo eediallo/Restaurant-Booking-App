@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext, createContext } from "react";
 import type { ReactNode } from "react";
 import { authService } from "../services/auth";
 import type { AuthResponse, AuthUser, ProfileData, UserData } from "../types";
+import { handleApiError } from "../lib/errorHandling/handleApiError";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -10,13 +11,15 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<AuthResponse>;
   register: (userData: UserData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
-  updateProfile: (profileData:ProfileData) => Promise<AuthUser>;
+  updateProfile: (profileData: ProfileData) => Promise<AuthUser>;
   refreshToken: () => Promise<string>;
   isAuthenticated: () => boolean;
   clearError: () => void;
 }
 
-interface AuthProviderProps { children: ReactNode }
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 // Create the AuthContext
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -75,7 +78,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       return response;
     } catch (error) {
-      setError(error.message || "Login failed");
+      const errorDetail = handleApiError(error);
+
+      let errorMessage = "Login failed";
+
+      if (errorDetail.kind === "response") {
+        errorMessage = errorDetail.data.detail || "Invalid Credentials";
+      } else if (errorDetail.kind === "request") {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else {
+        errorMessage = errorDetail.message;
+      }
+
+      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);
@@ -98,7 +113,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       return response;
     } catch (error) {
-      setError(error.message || "Registration failed");
+      const errorDetail = handleApiError(error);
+
+      let errorMessage = "Registration failed";
+
+      if (errorDetail.kind === "response") {
+        errorMessage =
+          errorDetail.data.detail || "Please check you input and try again";
+      } else if (errorDetail.kind === "request") {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else {
+        errorMessage = errorDetail.message;
+      }
+
+      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);

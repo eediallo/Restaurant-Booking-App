@@ -100,6 +100,10 @@ async def api_info() -> dict:
                 "/api/ConsumerApi/v1/Restaurant/{restaurant_name}/"
                 "BookingWithStripeToken"
             ),
+            "waitlist": (
+                "/api/ConsumerApi/v1/Restaurant/{restaurant_name}/"
+                "Waitlist"
+            ),
             "cancel_booking": (
                 "/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/"
                 "{booking_reference}/Cancel"

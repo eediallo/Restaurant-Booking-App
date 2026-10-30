@@ -135,9 +135,8 @@ def test_user_can_join_full_slot_waitlist(
     fill_slot(db_session, test_restaurant, test_user, slot)
 
     response = client.post(
-        "/api/waitlist/",
+        f"/api/ConsumerApi/v1/Restaurant/{test_restaurant.name}/Waitlist",
         json={
-            "restaurant_id": test_restaurant.id,
             "visit_date": visit_date.isoformat(),
             "visit_time": "19:00:00",
             "party_size": 2,
@@ -156,9 +155,8 @@ def test_user_cannot_join_available_slot_waitlist(
     add_slot(db_session, test_restaurant, visit_date)
 
     response = client.post(
-        "/api/waitlist/",
+        f"/api/ConsumerApi/v1/Restaurant/{test_restaurant.name}/Waitlist",
         json={
-            "restaurant_id": test_restaurant.id,
             "visit_date": visit_date.isoformat(),
             "visit_time": "19:00:00",
             "party_size": 2,
@@ -200,3 +198,110 @@ def test_user_can_accept_waitlist_offer(
     db_session.refresh(entry)
     assert entry.status == "booked"
     assert entry.booking_id is not None
+
+
+def test_user_cannot_join_same_slot_waitlist_twice(
+    client, db_session, test_user, test_restaurant
+):
+    visit_date = date.today() + timedelta(days=2)
+    slot = add_slot(db_session, test_restaurant, visit_date)
+    fill_slot(db_session, test_restaurant, test_user, slot)
+    data = {
+        "restaurant_id": test_restaurant.id,
+        "visit_date": visit_date.isoformat(),
+        "visit_time": "19:00:00",
+        "party_size": 2,
+    }
+
+    first_response = client.post(
+        "/api/waitlist/",
+        json=data,
+        headers=headers_for(test_user),
+    )
+    second_response = client.post(
+        "/api/waitlist/",
+        json=data,
+        headers=headers_for(test_user),
+    )
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 409
+    assert "already waiting" in second_response.json()["detail"]
+
+
+def test_expired_waitlist_offer_cannot_be_accepted(
+    client, db_session, test_user, test_restaurant
+):
+    visit_date = date.today() + timedelta(days=2)
+    slot = add_slot(db_session, test_restaurant, visit_date)
+    expired_at = datetime.utcnow() - timedelta(minutes=1)
+    entry = WaitlistEntry(
+        user_id=test_user.id,
+        restaurant_id=test_restaurant.id,
+        visit_date=slot.date,
+        visit_time=slot.time,
+        party_size=2,
+        status="offered",
+        offered_at=expired_at - timedelta(minutes=15),
+        offer_expires_at=expired_at,
+    )
+    db_session.add(entry)
+    db_session.commit()
+
+    response = client.post(
+        f"/api/waitlist/{entry.id}/accept",
+        headers=headers_for(test_user),
+    )
+
+    assert response.status_code == 409
+    assert "expired" in response.json()["detail"]
+    db_session.refresh(entry)
+    assert entry.status == "expired"
+
+
+def test_waiting_entry_cannot_be_accepted_as_offer(
+    client, db_session, test_user, test_restaurant
+):
+    visit_date = date.today() + timedelta(days=2)
+    entry = WaitlistEntry(
+        user_id=test_user.id,
+        restaurant_id=test_restaurant.id,
+        visit_date=visit_date,
+        visit_time=time(19, 0),
+        party_size=2,
+        status="waiting",
+    )
+    db_session.add(entry)
+    db_session.commit()
+
+    response = client.post(
+        f"/api/waitlist/{entry.id}/accept",
+        headers=headers_for(test_user),
+    )
+
+    assert response.status_code == 409
+    assert "no active offer" in response.json()["detail"]
+
+
+def test_user_can_leave_waitlist(
+    client, db_session, test_user, test_restaurant
+):
+    entry = WaitlistEntry(
+        user_id=test_user.id,
+        restaurant_id=test_restaurant.id,
+        visit_date=date.today() + timedelta(days=2),
+        visit_time=time(19, 0),
+        party_size=2,
+        status="waiting",
+    )
+    db_session.add(entry)
+    db_session.commit()
+
+    response = client.delete(
+        f"/api/waitlist/{entry.id}",
+        headers=headers_for(test_user),
+    )
+
+    assert response.status_code == 204
+    db_session.refresh(entry)
+    assert entry.status == "cancelled"

@@ -18,28 +18,15 @@ from app.services.availability import get_slot_status
 from app.services.booking import generate_booking_reference
 
 
-router = APIRouter(prefix="/api/waitlist", tags=["waitlist"])
+router = APIRouter(tags=["waitlist"])
 
 
-@router.post(
-    "/",
-    response_model=WaitlistEntryResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Join a restaurant waitlist",
-)
-def join_waitlist(
+def _create_waitlist_entry_for_restaurant(
+    restaurant: Restaurant,
     entry_data: WaitlistEntryCreate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
+    db: Session,
+    current_user: User,
 ) -> WaitlistEntry:
-    """Create a waitlist entry for the authenticated user."""
-    restaurant = db.query(Restaurant).filter(
-        Restaurant.id == entry_data.restaurant_id,
-        Restaurant.is_active.is_(True),
-    ).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-
     if entry_data.visit_date < date.today():
         raise HTTPException(
             status_code=400,
@@ -105,14 +92,73 @@ def join_waitlist(
     return entry
 
 
+@router.post(
+    "/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Waitlist",
+    response_model=WaitlistEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Join a restaurant waitlist",
+)
+def join_waitlist(
+    restaurant_name: str,
+    entry_data: WaitlistEntryCreate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> WaitlistEntry:
+    """Create a waitlist entry for the authenticated user at the specified restaurant."""
+    restaurant = db.query(Restaurant).filter(
+        Restaurant.name == restaurant_name,
+        Restaurant.is_active.is_(True),
+    ).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    return _create_waitlist_entry_for_restaurant(restaurant, entry_data, db, current_user)
+
+
+@router.post(
+    "/api/waitlist/join",
+    response_model=WaitlistEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Join a restaurant waitlist using restaurant_id",
+    include_in_schema=False,
+)
+@router.post(
+    "/api/waitlist/",
+    response_model=WaitlistEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+def join_waitlist_by_id(
+    entry_data: WaitlistEntryCreate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> WaitlistEntry:
+    """Fallback endpoint to join waitlist using restaurant_id in request body."""
+    if not entry_data.restaurant_id:
+        raise HTTPException(status_code=400, detail="restaurant_id is required")
+    restaurant = db.query(Restaurant).filter(
+        Restaurant.id == entry_data.restaurant_id,
+        Restaurant.is_active.is_(True),
+    ).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    return _create_waitlist_entry_for_restaurant(restaurant, entry_data, db, current_user)
+
+
 @router.get(
-    "/",
+    "/api/waitlist",
+    response_model=List[WaitlistEntryResponse],
+    summary="List my waitlist entries",
+)
+@router.get(
+    "/api/waitlist/my-entries",
     response_model=List[WaitlistEntryResponse],
     summary="List my waitlist entries",
 )
 def list_my_waitlist_entries(
     db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User,Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> List[WaitlistEntry]:
     """Return the authenticated user's entries, oldest first."""
     return (
@@ -124,7 +170,7 @@ def list_my_waitlist_entries(
 
 
 @router.post(
-    "/{entry_id}/accept",
+    "/api/waitlist/{entry_id}/accept",
     response_model=WaitlistOfferAcceptResponse,
     summary="Accept a waitlist offer",
 )
@@ -222,7 +268,7 @@ def accept_waitlist_offer(
 
 
 @router.delete(
-    "/{entry_id}",
+    "/api/waitlist/{entry_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Leave a waitlist",
 )

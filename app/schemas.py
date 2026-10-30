@@ -71,7 +71,7 @@ class BookingResponse(BaseModel):
 class WaitlistEntryCreate(BaseModel):
     """Fields a signed-in user provides to join a restaurant waitlist."""
 
-    restaurant_id: int
+    restaurant_id: Optional[int] = None
     visit_date: date
     visit_time: time
     party_size: int = Field(gt=0)

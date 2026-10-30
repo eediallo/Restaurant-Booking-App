@@ -76,7 +76,7 @@ async def create_booking_with_stripe(
     if not restaurant.accepts_reservations:
         raise HTTPException(
             status_code=409,
-            detail="This restaurant is not accepting reservations",
+            detail="This restaurant is not currently accepting reservations.",
         )
 
     if PartySize <= 0:

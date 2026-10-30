@@ -33,8 +33,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the backend application
 COPY app/ ./app/
-COPY alembic.ini .
-COPY alembic/ ./alembic/
 COPY .env ./
 
 # Copy the built frontend from the previous stage
@@ -46,8 +44,7 @@ RUN python -m app.init_db
 
 # Create a startup script
 RUN echo '#!/bin/bash\n\
-python -c "from app.database import Base, engine; import app.models; Base.metadata.create_all(bind=engine)"\n\
-alembic upgrade head\n\
+python -m app.init_db\n\
 exec uvicorn app.main:app --host 0.0.0.0 --port $PORT' > /app/start.sh \
     && chmod +x /app/start.sh
 

@@ -283,10 +283,26 @@ const BookingSearch = () => {
                   </div>
                   <button
                     className="book-slot-btn"
-                    onClick={() => handleBookSlot(slot)}
-                    disabled={!slot.available}
+                    onClick={() => {
+                      if (slot.available) {
+                        handleBookSlot(slot);
+                        return;
+                      }
+                      const restaurant = restaurants.find(
+                        (item) => item.id.toString() === selectedRestaurant
+                      );
+                      navigate("/waitlist", {
+                        state: {
+                          restaurantId: restaurant?.id,
+                          restaurantName: restaurant?.name,
+                          visitDate: searchParams.visitDate,
+                          visitTime: slot.time,
+                          partySize: Number(searchParams.partySize),
+                        },
+                      });
+                    }}
                   >
-                    {slot.available ? "Book This Time" : "Unavailable"}
+                    {slot.available ? "Book This Time" : "Join Waitlist"}
                   </button>
                 </div>
               ))}

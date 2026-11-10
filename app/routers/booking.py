@@ -6,8 +6,6 @@ retrieval, updates, and cancellation of restaurant bookings.
 
 """
 
-import random
-import string
 from datetime import date, time, datetime
 from typing import Optional
 
@@ -16,17 +14,20 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Restaurant, Customer, Booking, CancellationReason, User
+from app.models import (
+    Restaurant,
+    AvailabilitySlot,
+    Customer,
+    Booking,
+    CancellationReason,
+    User,
+)
 from app.routers.user import get_current_user
+from app.services.availability import get_slot_status
+from app.services.booking import generate_booking_reference
+from app.services.waitlist import offer_next_waitlist_entry
 
 router = APIRouter(prefix="/api/ConsumerApi/v1/Restaurant", tags=["booking"])
-
-def generate_booking_reference() -> str:
-    """
-    Generate a unique 7-character alphanumeric booking reference.
-    """
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
-
 
 def find_restaurant(restaurant_name: str, db: Session) -> Restaurant:
     """
@@ -72,6 +73,48 @@ async def create_booking_with_stripe(
     # Find restaurant using helper function
     restaurant = find_restaurant(restaurant_name, db)
 
+    if not restaurant.accepts_reservations:
+        raise HTTPException(
+            status_code=409,
+            detail="This restaurant is not currently accepting reservations.",
+        )
+
+    if PartySize <= 0:
+        raise HTTPException(status_code=400, detail="Party size must be positive")
+
+    if (
+        restaurant.max_party_size is not None
+        and PartySize > restaurant.max_party_size
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Party size cannot exceed {restaurant.max_party_size}",
+        )
+
+    slot = db.query(AvailabilitySlot).filter(
+        AvailabilitySlot.restaurant_id == restaurant.id,
+        AvailabilitySlot.date == VisitDate,
+        AvailabilitySlot.time == VisitTime,
+    ).first()
+    if not slot:
+        raise HTTPException(
+            status_code=409,
+            detail="No availability slot exists for that date and time",
+        )
+
+    if slot.max_party_size is not None and PartySize > slot.max_party_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Party size cannot exceed {slot.max_party_size}",
+        )
+
+    _, slot_is_available = get_slot_status(db, slot)
+    if not slot_is_available:
+        raise HTTPException(
+            status_code=409,
+            detail="The requested time slot is no longer available",
+        )
+
     # Find or create a customer record linked to the user
     customer = db.query(Customer).filter(Customer.user_id == current_user.id).first()
     if not customer:
@@ -87,9 +130,7 @@ async def create_booking_with_stripe(
         db.commit()
         db.refresh(customer)
 
-    booking_reference = generate_booking_reference()
-    while db.query(Booking).filter(Booking.booking_reference == booking_reference).first():
-        booking_reference = generate_booking_reference()
+    booking_reference = generate_booking_reference(db)
 
     booking = Booking(
         booking_reference=booking_reference,
@@ -226,6 +267,13 @@ async def cancel_booking(
     booking.status = "cancelled"
     booking.cancellation_reason_id = cancellationReasonId
     booking.updated_at = datetime.utcnow()
+    # This project disables autoflush, so persist the status change in the
+    # transaction before checking whether the cancellation freed a slot.
+    db.flush()
+    offered_entry = offer_next_waitlist_entry(db, booking)
     db.commit()
 
-    return {"message": f"Booking {booking_reference} has been successfully cancelled"}
+    return {
+        "message": f"Booking {booking_reference} has been successfully cancelled",
+        "waitlist_offer_created": offered_entry is not None,
+    }

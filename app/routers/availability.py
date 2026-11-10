@@ -13,8 +13,9 @@ from fastapi import APIRouter, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Restaurant, AvailabilitySlot, Booking, User
+from app.models import Restaurant, AvailabilitySlot, User
 from app.routers.user import get_current_user
+from app.services.availability import get_slot_status
 
 router = APIRouter(prefix="/api/ConsumerApi/v1/Restaurant", tags=["availability"])
 
@@ -68,17 +69,7 @@ async def availability_search(
     # Check for existing bookings at each slot time
     available_slots = []
     for slot in slots:
-        # Count existing bookings for this time slot
-        existing_bookings = db.query(Booking).filter(
-            Booking.restaurant_id == restaurant.id,
-            Booking.visit_date == VisitDate,
-            Booking.visit_time == slot.time,
-            Booking.status == "confirmed"
-        ).count()
-
-        # Simple logic: allow up to 3 bookings per time slot
-        max_bookings_per_slot = 3
-        is_available = slot.available and existing_bookings < max_bookings_per_slot
+        existing_bookings, is_available = get_slot_status(db, slot)
 
         available_slots.append({
             "time": slot.time.strftime("%H:%M:%S"),

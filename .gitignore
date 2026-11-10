@@ -9,3 +9,6 @@ prompts
 de
 test.db
 restaurant_booking.db
+.coverage
+htmlcov/
+.pytest_cache/

@@ -71,6 +71,9 @@ const Navbar = () => {
               >
                 Find Tables
               </a>
+              <a href="/waitlist" className="nav-link" onClick={closeMobileMenu}>
+                Waitlist
+              </a>
 
               <div className="user-dropdown">
                 <button className="user-button" onClick={toggleDropdown}>

@@ -16,6 +16,7 @@ import UserProfile from "./pages/UserProfile";
 import BookingTemplates from "./components/BookingTemplates";
 import RestaurantSearch from "./pages/RestaurantSearch";
 import RestaurantDetails from "./pages/RestaurantDetails";
+import Waitlist from "./pages/Waitlist";
 import "./App.css";
 
 function App() {
@@ -76,6 +77,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/waitlist"
+              element={
+                <ProtectedRoute>
+                  <Waitlist />
                 </ProtectedRoute>
               }
             />

@@ -123,7 +123,7 @@ export const waitlistAPI = {
   getEntries: async (): Promise<WaitlistEntry[]> =>
     (await api.get<WaitlistEntry[]>("/api/waitlist")).data,
   join: async (entry: WaitlistEntryCreate): Promise<WaitlistEntry> =>
-    (await api.post<WaitlistEntry>("/api/waitlist/join", entry)).data,
+    (await api.post<WaitlistEntry>("/api/waitlist/", entry)).data,
   acceptOffer: async (id: number): Promise<WaitlistOfferAcceptResponse> =>
     (await api.post<WaitlistOfferAcceptResponse>(`/api/waitlist/${id}/accept`)).data,
   leave: async (id: number): Promise<void> => {

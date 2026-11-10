@@ -8,7 +8,7 @@ A modern, full-stack restaurant booking application built with **FastAPI** (back
 
 - **User Authentication**: Secure registration, login, logout with JWT tokens
 - **Restaurant Discovery**: Advanced search with filters (cuisine, location, price range, features)
-- **Table Booking System**: Real-time availability checking and reservation management
+- **Table Booking & Waitlist System**: Real-time availability checking, reservation management, and automated waitlist for full slots
 - **Booking Management**: Complete booking history and status tracking
 - **Restaurant Reviews**: User reviews and ratings with detailed feedback
 - **User Profiles**: Extended profile management with preferences and accessibility needs
@@ -152,6 +152,13 @@ For manual deployment, see the [Deployment Guide](DEPLOYMENT.md).
 - `PATCH /api/bookings/{id}` - Update booking
 - `DELETE /api/bookings/{id}` - Cancel booking
 
+#### Waitlists
+
+- `POST /api/ConsumerApi/v1/Restaurant/{restaurant_name}/Waitlist` - Join a restaurant waitlist (Consumer API)
+- `GET /api/waitlist` - List current user's waitlist entries
+- `POST /api/waitlist/{id}/accept` - Accept active waitlist offer and confirm booking
+- `DELETE /api/waitlist/{id}` - Leave/cancel waitlist entry
+
 ## Testing
 
 The application includes a comprehensive test suite:
@@ -191,6 +198,7 @@ pytest tests/security/      # Security tests
 - **Dashboard**: User overview and quick actions
 - **Booking Form**: Create new reservations
 - **Booking History**: View past and upcoming bookings
+- **Waitlist**: View active requests, accept table offers, and manage waitlist entries
 - **User Profile**: Manage account settings and preferences
 
 ## Security Features

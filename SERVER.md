@@ -156,7 +156,34 @@ Creates a new restaurant booking with customer information.
 }
 ```
 
-### 3. Get Booking Details
+### 3. Join Restaurant Waitlist
+**POST** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Waitlist`
+
+Creates a waitlist entry for the authenticated user at the specified restaurant for fully booked time slots.
+
+**Parameters (JSON Body):**
+- `visit_date`: Date in YYYY-MM-DD format (required)
+- `visit_time`: Time in HH:MM:SS format (required)
+- `party_size`: Number of guests (required, must be > 0)
+- `restaurant_id`: Optional restaurant ID (resolved from restaurant name in path if omitted)
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "restaurant_id": 1,
+  "visit_date": "2025-08-06",
+  "visit_time": "19:00:00",
+  "party_size": 2,
+  "status": "waiting",
+  "created_at": "2025-08-06T10:00:00",
+  "offered_at": null,
+  "offer_expires_at": null,
+  "booking_id": null
+}
+```
+
+### 4. Get Booking Details
 **GET** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}`
 
 Retrieves complete booking information.
@@ -184,7 +211,7 @@ Retrieves complete booking information.
 }
 ```
 
-### 4. Update Booking
+### 5. Update Booking
 **PATCH** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}`
 
 Modifies an existing booking. Only provide fields you want to change.
@@ -212,7 +239,7 @@ Modifies an existing booking. Only provide fields you want to change.
 }
 ```
 
-### 5. Cancel Booking
+### 6. Cancel Booking
 **POST** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}/Cancel`
 
 Cancels an existing booking with a reason.
@@ -235,6 +262,14 @@ Cancels an existing booking with a reason.
   "message": "Booking ABC1234 has been successfully cancelled"
 }
 ```
+
+### User Waitlist Management Endpoints
+
+Authenticated users can manage waitlist entries and accept offers through these dedicated endpoints:
+
+- **GET** `/api/waitlist` (or `/api/waitlist/my-entries`): List current authenticated user's waitlist entries.
+- **POST** `/api/waitlist/{entry_id}/accept`: Accept an active waitlist offer, automatically confirming a booking.
+- **DELETE** `/api/waitlist/{entry_id}`: Leave/cancel a waitlist entry (HTTP 204).
 
 ## Cancellation Reasons
 
@@ -286,13 +321,21 @@ curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnico
      -d "VisitDate=2025-08-06&VisitTime=12:30:00&PartySize=4&ChannelCode=ONLINE&SpecialRequests=Window table please&Customer[FirstName]=John&Customer[Surname]=Smith&Customer[Email]=john@example.com&Customer[Mobile]=1234567890"
 ```
 
-### 3. Get Booking Details
+### 3. Join Waitlist
+```bash
+curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Waitlist" \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
+     -H "Content-Type: application/json" \
+     -d '{"visit_date": "2025-08-06", "visit_time": "19:00:00", "party_size": 2}'
+```
+
+### 4. Get Booking Details
 ```bash
 curl -X GET "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234" \
      -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8"
 ```
 
-### 4. Update Booking
+### 5. Update Booking
 ```bash
 curl -X PATCH "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234" \
      -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
@@ -300,7 +343,7 @@ curl -X PATCH "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnic
      -d "PartySize=6&SpecialRequests=Updated request"
 ```
 
-### 5. Cancel Booking
+### 6. Cancel Booking
 ```bash
 curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234/Cancel" \
      -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \

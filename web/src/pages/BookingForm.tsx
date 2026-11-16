@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
-import type { AvailabilitySlot, BookingConfirmation, PendingBooking, Restaurant } from "../types";
+import type {
+  AvailabilitySlot,
+  BookingConfirmation,
+  PendingBooking,
+  Restaurant,
+} from "../types";
 import Input from "../components/ui/Input";
 import "./BookingForm.css";
 
@@ -27,8 +32,24 @@ const BookingForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(
+    null,
+  );
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+
+  // Prefill contact fields from the signed-in user's account. Keep these as
+  // normal controlled inputs so the customer can edit them for this booking.
+  useEffect(() => {
+    if (!user) return;
+
+    setBookingData((prev) => ({
+      ...prev,
+      firstName: prev.firstName || user.first_name || "",
+      surname: prev.surname || user.last_name || "",
+      mobile: prev.mobile || user.phone || "",
+      email: prev.email || user.email || "",
+    }));
+  }, [user]);
 
   useEffect(() => {
     let bookingDataSource: PendingBooking | null = null;
@@ -82,7 +103,11 @@ const BookingForm = () => {
     }
   }, [navigate, location.state]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     setBookingData((prev) => ({
@@ -106,7 +131,10 @@ const BookingForm = () => {
       formData.append("PartySize", String(bookingData.partySize));
       formData.append("ChannelCode", bookingData.channelCode);
       formData.append("SpecialRequests", bookingData.specialRequests);
-      formData.append("IsLeaveTimeConfirmed", String(bookingData.isLeaveTimeConfirmed));
+      formData.append(
+        "IsLeaveTimeConfirmed",
+        String(bookingData.isLeaveTimeConfirmed),
+      );
 
       // Customer details
       formData.append("Customer[Title]", bookingData.title);
@@ -125,11 +153,11 @@ const BookingForm = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       setSuccess(
-        `Booking confirmed! Your reference number is: ${response.data.booking_reference}`
+        `Booking confirmed! Your reference number is: ${response.data.booking_reference}`,
       );
 
       // Reset form
@@ -154,7 +182,7 @@ const BookingForm = () => {
     } catch (err) {
       setError(
         err.response?.data?.detail ||
-          "Failed to create booking. Please try again."
+          "Failed to create booking. Please try again.",
       );
       console.error("Error creating booking:", err);
     } finally {
@@ -296,7 +324,7 @@ const BookingForm = () => {
             <div className="form-row">
               <div className="form-group">
                 <Input
-                  label="First Name *"
+                  label="First Name"
                   type="text"
                   name="firstName"
                   value={bookingData.firstName}
@@ -307,7 +335,7 @@ const BookingForm = () => {
 
               <div className="form-group">
                 <Input
-                  label="Surname *"
+                  label="Surname"
                   type="text"
                   name="surname"
                   value={bookingData.surname}
@@ -320,7 +348,7 @@ const BookingForm = () => {
             <div className="form-row">
               <div className="form-group">
                 <Input
-                  label="Mobile Number *"
+                  label="Mobile Number"
                   type="tel"
                   name="mobile"
                   value={bookingData.mobile}
@@ -331,7 +359,7 @@ const BookingForm = () => {
 
               <div className="form-group">
                 <Input
-                  label="Email Address *"
+                  label="Email Address"
                   type="email"
                   name="email"
                   value={bookingData.email}

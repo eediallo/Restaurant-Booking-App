@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { api, waitlistAPI } from "../services/api";
 import type { Restaurant, RestaurantListResponse, WaitlistEntry } from "../types";
+import { handleApiError } from "../lib/errorHandling/handleApiError";
 import "./Waitlist.css";
 
 type State = {
@@ -13,8 +13,10 @@ type State = {
   partySize?: number;
 };
 
+const ACTIVE_STATUSES = ["waiting", "offered"];
+
 const dateText = (value: string) =>
-  new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
+  new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -22,7 +24,7 @@ const dateText = (value: string) =>
   });
 
 const timeText = (value: string) =>
-  new Date(`2000-01-01T${value}`).toLocaleTimeString("en-US", {
+  new Date(`2000-01-01T${value}`).toLocaleTimeString("en-GB", {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -36,7 +38,7 @@ const formatExpiry = (expiresAt?: string | null) => {
   const expiryDate = new Date(iso);
   const now = new Date();
   const diffMinutes = Math.round((expiryDate.getTime() - now.getTime()) / 60000);
-  const timeFormatted = expiryDate.toLocaleTimeString("en-US", {
+  const timeFormatted = expiryDate.toLocaleTimeString("en-GB", {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -45,19 +47,6 @@ const formatExpiry = (expiresAt?: string | null) => {
     return `Offer expired at ${timeFormatted}`;
   }
   return `Accept within ~${diffMinutes} min (expires at ${timeFormatted})`;
-};
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error)) {
-    const detail = error.response?.data?.detail;
-    if (typeof detail === "string") return detail;
-    if (Array.isArray(detail) && detail.length > 0) {
-      return detail
-        .map((item: { msg?: string; detail?: string }) => item.msg || item.detail || JSON.stringify(item))
-        .join(", ");
-    }
-  }
-  return error instanceof Error ? error.message : fallback;
 };
 
 export default function Waitlist() {
@@ -89,7 +78,14 @@ export default function Waitlist() {
       })
       .catch((reason) => {
         console.error("Error loading waitlist:", reason);
-        setError(getErrorMessage(reason, "We couldn't load your waitlist."));
+        const errorDetail = handleApiError(reason);
+        setError(
+          errorDetail.kind === "response"
+            ? errorDetail.data.detail || "We couldn't load your waitlist."
+            : errorDetail.kind === "request"
+              ? "Network error. Please check your internet connection."
+              : errorDetail.message
+        );
       })
       .finally(() => setLoading(false));
   }, []);
@@ -128,7 +124,14 @@ export default function Waitlist() {
       setMessage("You're on the list! We'll notify you as soon as this slot opens up.");
     } catch (reason) {
       console.error("Error joining waitlist:", reason);
-      setError(getErrorMessage(reason, "That time may have opened up already. Please try again."));
+      const errorDetail = handleApiError(reason);
+      setError(
+        errorDetail.kind === "response"
+          ? errorDetail.data.detail || "That time may have opened up already. Please try again."
+          : errorDetail.kind === "request"
+            ? "Network error. Please check your internet connection."
+            : errorDetail.message
+      );
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +156,14 @@ export default function Waitlist() {
       setMessage(`Your table is booked! Confirmation reference: ${booking.booking_reference}`);
     } catch (reason) {
       console.error("Error accepting waitlist offer:", reason);
-      setError(getErrorMessage(reason, "This offer is no longer available."));
+      const errorDetail = handleApiError(reason);
+      setError(
+        errorDetail.kind === "response"
+          ? errorDetail.data.detail || "This offer is no longer available."
+          : errorDetail.kind === "request"
+            ? "Network error. Please check your internet connection."
+            : errorDetail.message
+      );
     } finally {
       setBusy(null);
     }
@@ -174,17 +184,24 @@ export default function Waitlist() {
       setMessage("You have left the waitlist.");
     } catch (reason) {
       console.error("Error leaving waitlist:", reason);
-      setError(getErrorMessage(reason, "We couldn't remove you from this waitlist."));
+      const errorDetail = handleApiError(reason);
+      setError(
+        errorDetail.kind === "response"
+          ? errorDetail.data.detail || "We couldn't remove you from this waitlist."
+          : errorDetail.kind === "request"
+            ? "Network error. Please check your internet connection."
+            : errorDetail.message
+      );
     } finally {
       setBusy(null);
     }
   };
 
-  const name = (id: number) =>
+  const getRestaurantName = (id: number) =>
     restaurants.find((restaurant) => restaurant.id === id)?.name || "Restaurant";
 
-  const active = entries.filter((entry) => ["waiting", "offered"].includes(entry.status));
-  const previous = entries.filter((entry) => !["waiting", "offered"].includes(entry.status));
+  const active = entries.filter((entry) => ACTIVE_STATUSES.includes(entry.status));
+  const previous = entries.filter((entry) => !ACTIVE_STATUSES.includes(entry.status));
   const restaurantLoading = loading && restaurants.length === 0;
 
   return (
@@ -319,7 +336,7 @@ export default function Waitlist() {
               {active.map((entry) => (
                 <article className={`entry ${entry.status}`} key={entry.id}>
                   <div className="entry-topline">
-                    <strong>{name(entry.restaurant_id)}</strong>
+                    <strong>{getRestaurantName(entry.restaurant_id)}</strong>
                     <span className={`entry-status ${entry.status}`}>
                       {statusText(entry.status)}
                     </span>
@@ -368,7 +385,7 @@ export default function Waitlist() {
                 {previous.map((entry) => (
                   <article className={`entry ${entry.status}`} key={entry.id}>
                     <div className="entry-topline">
-                      <strong>{name(entry.restaurant_id)}</strong>
+                      <strong>{getRestaurantName(entry.restaurant_id)}</strong>
                       <span className={`entry-status ${entry.status}`}>
                         {statusText(entry.status)}
                       </span>

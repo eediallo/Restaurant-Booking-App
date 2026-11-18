@@ -1,5 +1,12 @@
 import axios from "axios";
-import type { Booking, ProfileData, UserProfile } from "../types";
+import type {
+  Booking,
+  ProfileData,
+  UserProfile,
+  WaitlistEntry,
+  WaitlistEntryCreate,
+  WaitlistOfferAcceptResponse,
+} from "../types";
 
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
@@ -109,5 +116,17 @@ export const userAPI = {
   getBookings: async (): Promise<Booking[]> => {
     const response = await api.get<Booking[]>("/api/user/bookings");
     return response.data;
+  },
+};
+
+export const waitlistAPI = {
+  getEntries: async (): Promise<WaitlistEntry[]> =>
+    (await api.get<WaitlistEntry[]>("/api/waitlist")).data,
+  join: async (entry: WaitlistEntryCreate): Promise<WaitlistEntry> =>
+    (await api.post<WaitlistEntry>("/api/waitlist/", entry)).data,
+  acceptOffer: async (id: number): Promise<WaitlistOfferAcceptResponse> =>
+    (await api.post<WaitlistOfferAcceptResponse>(`/api/waitlist/${id}/accept`)).data,
+  leave: async (id: number): Promise<void> => {
+    await api.delete(`/api/waitlist/${id}`);
   },
 };

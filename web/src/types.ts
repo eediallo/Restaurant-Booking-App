@@ -165,6 +165,32 @@ export interface AvailabilitySlot {
   formattedTime?: string;
 }
 
+export interface WaitlistEntry {
+  id: number;
+  restaurant_id: number;
+  visit_date: string;
+  visit_time: string;
+  party_size: number;
+  status: string;
+  created_at: string;
+  offered_at?: string | null;
+  offer_expires_at?: string | null;
+  booking_id?: number | null;
+}
+
+export interface WaitlistEntryCreate {
+  restaurant_id: number;
+  visit_date: string;
+  visit_time: string;
+  party_size: number;
+}
+
+export interface WaitlistOfferAcceptResponse {
+  booking_id: number;
+  booking_reference: string;
+  status: string;
+}
+
 export interface BookingTemplate {
   id: number | string;
   name: string;
